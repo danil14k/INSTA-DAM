@@ -1,0 +1,2 @@
+C:/Users/jiranzoherraes2004/Documents/INSTADAMD/INSTADAM/build/.cxx/debug/511c3c54/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/jiranzoherraes2004/Documents/INSTADAMD/INSTADAM/build/.cxx/debug/511c3c54/armeabi-v7a/CMakeFiles/rebuild_cache.dir
