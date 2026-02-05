@@ -1,0 +1,1 @@
+ C:\\Users\\jiranzoherraes2004\\Documents\\INSTADAMD\\INSTADAM\\.dart_tool\\flutter_build\\cb91c34586b894254b5cf749d194d320\\native_assets.json: 
