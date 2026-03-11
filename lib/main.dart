@@ -5,6 +5,8 @@ import 'screens/feed_screen.dart';
 import 'screens/create_post_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/splash_screen.dart';
+import 'theme/app_theme.dart';
 import 'db/database_helper.dart';
 import 'models/user.dart';
 
@@ -30,6 +32,7 @@ class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.light;
   Locale _locale = Locale('en');
   User? _currentUser;
+  bool _splashFinished = false;
 
   @override
   void initState() {
@@ -96,11 +99,19 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'InstaDAM',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
       locale: _locale,
-      home: _currentUser == null ? LoginScreen(onLogin: _onLogin) : FeedScreen(currentUser: _currentUser!, onLogout: _onLogout),
+      home: _splashFinished
+          ? (_currentUser == null
+              ? LoginScreen(onLogin: _onLogin)
+              : FeedScreen(currentUser: _currentUser!, onLogout: _onLogout))
+          : SplashScreen(onFinish: () {
+              setState(() {
+                _splashFinished = true;
+              });
+            }),
       routes: {
         '/create': (_) => CreatePostScreen(currentUser: _currentUser!),
         '/profile': (_) => ProfileScreen(currentUser: _currentUser!),
