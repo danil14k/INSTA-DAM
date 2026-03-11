@@ -7,6 +7,7 @@ import '../widgets/post_widget.dart';
 import '../theme/app_theme.dart';
 import 'profile_screen.dart';
 import 'reels_screen.dart';
+import 'chat_list_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   final User currentUser;
@@ -51,7 +52,6 @@ class _FeedScreenState extends State<FeedScreen> {
           height: 40,
         ),
         actions: [
-          // Theme toggle - always visible
           IconButton(
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, color: brand),
             onPressed: () => widget.onToggleTheme(!isDark),
@@ -75,7 +75,7 @@ class _FeedScreenState extends State<FeedScreen> {
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Messages'),
           BottomNavigationBarItem(icon: Icon(Icons.add_box_outlined), label: 'Add'),
           BottomNavigationBarItem(icon: Icon(Icons.movie_outlined), label: 'Reels'),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
@@ -103,6 +103,8 @@ class _FeedScreenState extends State<FeedScreen> {
                   ),
                 ),
         );
+      case 1:
+        return ChatListScreen(currentUser: widget.currentUser);
       case 3:
         return ReelsScreen(currentUser: widget.currentUser);
       case 4:

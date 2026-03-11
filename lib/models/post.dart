@@ -5,8 +5,9 @@ class Post {
   String description;
   String date;
   int likes;
-  String mediaPath; // local file path for image/video
-  String mediaType; // 'image', 'video', or '' (text-only)
+  String mediaPath;
+  String mediaType;
+  String location;
 
   Post({
     this.id,
@@ -17,6 +18,7 @@ class Post {
     this.likes = 0,
     this.mediaPath = '',
     this.mediaType = '',
+    this.location = '',
   });
 
   bool get hasMedia => mediaPath.isNotEmpty && mediaType.isNotEmpty;
@@ -32,6 +34,7 @@ class Post {
         'likes': likes,
         'mediaPath': mediaPath,
         'mediaType': mediaType,
+        'location': location,
       };
 
   factory Post.fromMap(Map<String, dynamic> m) => Post(
@@ -43,5 +46,6 @@ class Post {
         likes: m['likes'] ?? 0,
         mediaPath: m['mediaPath'] ?? '',
         mediaType: m['mediaType'] ?? '',
+        location: m['location'] ?? '',
       );
 }

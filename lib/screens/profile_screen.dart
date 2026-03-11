@@ -1,10 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../db/database_helper.dart';
 import '../models/post.dart';
 import '../widgets/post_widget.dart';
 import '../theme/app_theme.dart';
+import 'edit_profile_screen.dart';
+import 'user_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User currentUser;
@@ -16,6 +18,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   int _postCount = 0;
+  int _followersCount = 0;
+  int _followingCount = 0;
   String? _displayName;
   List<Post> _userPosts = [];
   bool _isGridView = true;
@@ -24,22 +28,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadData();
-    _loadProfilePrefs();
   }
 
   void _loadData() async {
+    final user = await DatabaseHelper.instance.getUserByUsername(widget.currentUser.username);
+    if (user != null) {
+      widget.currentUser.displayName = user.displayName;
+      widget.currentUser.bio = user.bio;
+      widget.currentUser.profileImagePath = user.profileImagePath;
+    }
     final posts = await DatabaseHelper.instance.getAllPosts(username: widget.currentUser.username);
+    final followers = await DatabaseHelper.instance.getFollowersCount(widget.currentUser.username);
+    final following = await DatabaseHelper.instance.getFollowingCount(widget.currentUser.username);
     setState(() {
       _postCount = posts.length;
       _userPosts = posts;
-    });
-  }
-
-  void _loadProfilePrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final d = prefs.getString('displayName') ?? widget.currentUser.displayName ?? widget.currentUser.username;
-    setState(() {
-      _displayName = d;
+      _followersCount = followers;
+      _followingCount = following;
+      _displayName = widget.currentUser.displayName ?? widget.currentUser.username;
     });
   }
 
@@ -60,6 +66,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  void _showUserList(String title, Future<List<User>> Function() getter) async {
+    final users = await getter();
+    Navigator.push(context, MaterialPageRoute(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: Text(title)),
+        body: ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, i) {
+            final user = users[i];
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundColor: AppTheme.brandOf(context).withValues(alpha: 0.2),
+                backgroundImage: user.profileImagePath.isNotEmpty
+                    ? FileImage(File(user.profileImagePath))
+                    : null,
+                child: user.profileImagePath.isEmpty
+                    ? Icon(Icons.person, color: AppTheme.brandOf(context))
+                    : null,
+              ),
+              title: Text(user.username, style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(user.displayName ?? ''),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => UserProfileScreen(username: user.username, currentUser: widget.currentUser),
+                ));
+              },
+            );
+          },
+        ),
+      ),
+    ));
   }
 
   @override
@@ -88,15 +127,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: brand.withValues(alpha: 0.2),
-                  child: Icon(Icons.person, size: 50, color: brand),
+                  backgroundImage: widget.currentUser.profileImagePath.isNotEmpty
+                      ? FileImage(File(widget.currentUser.profileImagePath))
+                      : null,
+                  child: widget.currentUser.profileImagePath.isEmpty
+                      ? Icon(Icons.person, size: 50, color: brand)
+                      : null,
                 ),
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildStatColumn(_postCount, 'Posts', onTap: _showFilteredFeed),
-                      _buildStatColumn(120, 'Followers'),
-                      _buildStatColumn(150, 'Following'),
+                      _buildStatColumn(_followersCount, 'Followers', onTap: () =>
+                        _showUserList('Followers', () => DatabaseHelper.instance.getFollowers(widget.currentUser.username))),
+                      _buildStatColumn(_followingCount, 'Following', onTap: () =>
+                        _showUserList('Following', () => DatabaseHelper.instance.getFollowing(widget.currentUser.username))),
                     ],
                   ),
                 ),
@@ -109,12 +155,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(_displayName ?? widget.currentUser.username, style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('Digital Creator', style: TextStyle(color: secondaryText)),
-                Text('Flutter Developer | InstaDAM app'),
+                if (widget.currentUser.bio.isNotEmpty)
+                  Text(widget.currentUser.bio, style: TextStyle(color: secondaryText))
+                else
+                  Text('Flutter Developer | InstaDAM app', style: TextStyle(color: secondaryText)),
               ],
             ),
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 12),
+          // Edit profile button
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () async {
+                  await Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => EditProfileScreen(
+                      currentUser: widget.currentUser,
+                      onUpdated: (updated) {
+                        _loadData();
+                      },
+                    ),
+                  ));
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+                  foregroundColor: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+                ),
+                child: Text('Editar perfil', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+          SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -145,18 +218,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 final post = _userPosts[i];
                 return GestureDetector(
                   onTap: _showFilteredFeed,
-                  child: post.imageUrl.isNotEmpty
-                      ? Image.network(post.imageUrl, fit: BoxFit.cover)
-                      : Container(
-                          color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
-                          child: Icon(Icons.image, color: secondaryText),
-                        ),
+                  child: _buildPostThumbnail(post, isDark, secondaryText),
                 );
               },
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPostThumbnail(Post post, bool isDark, Color? secondaryText) {
+    if (post.hasMedia && post.isImage) {
+      return Image.file(File(post.mediaPath), fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _gridPlaceholder(isDark, secondaryText));
+    }
+    if (post.hasMedia && post.isVideo) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface),
+          Center(child: Icon(Icons.videocam, color: secondaryText, size: 30)),
+        ],
+      );
+    }
+    return _gridPlaceholder(isDark, secondaryText);
+  }
+
+  Widget _gridPlaceholder(bool isDark, Color? secondaryText) {
+    return Container(
+      color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+      child: Icon(Icons.image, color: secondaryText),
     );
   }
 
