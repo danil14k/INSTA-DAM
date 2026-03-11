@@ -5,8 +5,23 @@ class Post {
   String description;
   String date;
   int likes;
+  String mediaPath; // local file path for image/video
+  String mediaType; // 'image', 'video', or '' (text-only)
 
-  Post({this.id, required this.imageUrl, required this.username, required this.description, required this.date, this.likes = 0});
+  Post({
+    this.id,
+    required this.imageUrl,
+    required this.username,
+    required this.description,
+    required this.date,
+    this.likes = 0,
+    this.mediaPath = '',
+    this.mediaType = '',
+  });
+
+  bool get hasMedia => mediaPath.isNotEmpty && mediaType.isNotEmpty;
+  bool get isVideo => mediaType == 'video';
+  bool get isImage => mediaType == 'image';
 
   Map<String, dynamic> toMap() => {
         'id': id,
@@ -15,7 +30,18 @@ class Post {
         'description': description,
         'date': date,
         'likes': likes,
+        'mediaPath': mediaPath,
+        'mediaType': mediaType,
       };
 
-  factory Post.fromMap(Map<String, dynamic> m) => Post(id: m['id'], imageUrl: m['imageUrl'], username: m['username'], description: m['description'], date: m['date'], likes: m['likes'] ?? 0);
+  factory Post.fromMap(Map<String, dynamic> m) => Post(
+        id: m['id'],
+        imageUrl: m['imageUrl'] ?? '',
+        username: m['username'],
+        description: m['description'],
+        date: m['date'],
+        likes: m['likes'] ?? 0,
+        mediaPath: m['mediaPath'] ?? '',
+        mediaType: m['mediaType'] ?? '',
+      );
 }

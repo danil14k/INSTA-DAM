@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import '../models/post.dart';
 import '../models/user.dart';
 import '../db/database_helper.dart';
@@ -18,6 +20,7 @@ class _PostWidgetState extends State<PostWidget> {
   late Post _post;
   bool _liked = false;
   int _commentsCount = 0;
+  VideoPlayerController? _videoController;
 
   @override
   void initState() {
@@ -25,6 +28,22 @@ class _PostWidgetState extends State<PostWidget> {
     _post = widget.post;
     _loadCommentsCount();
     _loadLikedState();
+    if (_post.isVideo && _post.mediaPath.isNotEmpty) {
+      _initVideo();
+    }
+  }
+
+  void _initVideo() {
+    _videoController = VideoPlayerController.file(File(_post.mediaPath))
+      ..initialize().then((_) {
+        setState(() {});
+      });
+  }
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    super.dispose();
   }
 
   void _loadLikedState() async {
@@ -77,6 +96,59 @@ class _PostWidgetState extends State<PostWidget> {
     widget.onChanged?.call();
   }
 
+  Widget _buildMediaContent() {
+    // Local media file
+    if (_post.hasMedia) {
+      if (_post.isImage) {
+        return Image.file(File(_post.mediaPath), fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _placeholder());
+      } else if (_post.isVideo && _videoController != null) {
+        return _videoController!.value.isInitialized
+            ? GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _videoController!.value.isPlaying
+                        ? _videoController!.pause()
+                        : _videoController!.play();
+                  });
+                },
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AspectRatio(
+                      aspectRatio: _videoController!.value.aspectRatio,
+                      child: VideoPlayer(_videoController!),
+                    ),
+                    if (!_videoController!.value.isPlaying)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black38,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: EdgeInsets.all(12),
+                        child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
+                      ),
+                  ],
+                ),
+              )
+            : _placeholder();
+      }
+    }
+
+    // Legacy: network image URL
+    if (_post.imageUrl.isNotEmpty) {
+      return Image.network(_post.imageUrl, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _placeholder());
+    }
+
+    // Text-only post — no media square
+    return _placeholder();
+  }
+
+  Widget _placeholder() {
+    return Container(color: Colors.grey[200], child: Icon(Icons.image, size: 50, color: Colors.grey));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -93,6 +165,10 @@ class _PostWidgetState extends State<PostWidget> {
               ),
               SizedBox(width: 10),
               Text(_post.username, style: TextStyle(fontWeight: FontWeight.bold)),
+              if (_post.isVideo) ...[
+                SizedBox(width: 6),
+                Icon(Icons.videocam, size: 16, color: Colors.grey),
+              ],
               Spacer(),
               IconButton(
                 icon: Icon(Icons.more_vert),
@@ -130,10 +206,8 @@ class _PostWidgetState extends State<PostWidget> {
           ),
         ),
         AspectRatio(
-          aspectRatio: 1.0, // Instagram likes square posts
-          child: _post.imageUrl.isNotEmpty
-              ? Image.network(_post.imageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey[200], child: Icon(Icons.image, size: 50, color: Colors.grey)))
-              : Container(color: Colors.grey[200], child: Icon(Icons.image, size: 50, color: Colors.grey)),
+          aspectRatio: 1.0,
+          child: _buildMediaContent(),
         ),
         Row(
           children: [

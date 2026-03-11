@@ -5,6 +5,7 @@ import '../models/post.dart';
 import '../utils/strings.dart';
 import '../widgets/post_widget.dart';
 import 'profile_screen.dart';
+import 'reels_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   final User currentUser;
@@ -87,6 +88,8 @@ class _FeedScreenState extends State<FeedScreen> {
                   ),
                 ),
         );
+      case 3:
+        return ReelsScreen(currentUser: widget.currentUser);
       case 4:
         return ProfileScreen(currentUser: widget.currentUser);
       default:

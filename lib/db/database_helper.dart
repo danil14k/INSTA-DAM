@@ -25,12 +25,16 @@ class DatabaseHelper {
   Future<Database> _initDB(String fileName) async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, fileName);
-    return await openDatabase(path, version: 2, onCreate: _createDB, onUpgrade: _onUpgrade);
+    return await openDatabase(path, version: 3, onCreate: _createDB, onUpgrade: _onUpgrade);
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE users ADD COLUMN password TEXT NOT NULL DEFAULT ""');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE posts ADD COLUMN mediaPath TEXT NOT NULL DEFAULT ""');
+      await db.execute('ALTER TABLE posts ADD COLUMN mediaType TEXT NOT NULL DEFAULT ""');
     }
   }
 
@@ -51,7 +55,9 @@ class DatabaseHelper {
         username TEXT,
         description TEXT,
         date TEXT,
-        likes INTEGER
+        likes INTEGER,
+        mediaPath TEXT,
+        mediaType TEXT
       )
     ''');
 
@@ -105,6 +111,14 @@ class DatabaseHelper {
   Future<List<Post>> getAllPosts({String? username}) async {
     final db = await instance.database;
     final res = username == null ? await db.query('posts', orderBy: 'id DESC') : await db.query('posts', where: 'username=?', whereArgs: [username], orderBy: 'id DESC');
+    return res.map((m) => Post.fromMap(m)).toList();
+  }
+
+  Future<List<Post>> getMediaPosts() async {
+    final db = await instance.database;
+    final res = await db.query('posts',
+        where: 'mediaPath IS NOT NULL AND mediaPath != ""',
+        orderBy: 'id DESC');
     return res.map((m) => Post.fromMap(m)).toList();
   }
 
