@@ -45,22 +45,14 @@ class _SplashScreenState extends State<SplashScreen> {
             Semantics(
               label: 'InstaDAM logo',
               image: true,
-              child: const Icon(
-                Icons.camera_alt,
-                size: 100,
-                color: AppTheme.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Accessible App Name
-            Semantics(
-              label: 'InstaDAM',
-              child: const Text(
-                'InstaDAM',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textMain,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  Theme.of(context).brightness == Brightness.dark
+                      ? 'assets/media/logos/logo_negro.png'
+                      : 'assets/media/logos/logo_blanco.png',
+                  width: 150,
+                  height: 150,
                 ),
               ),
             ),

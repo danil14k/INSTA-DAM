@@ -40,7 +40,12 @@ class _FeedScreenState extends State<FeedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _currentIndex == 0 ? AppBar(
-        title: Text('InstaDAM', style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold, fontSize: 24)),
+        title: Image.asset(
+          Theme.of(context).brightness == Brightness.dark
+              ? 'assets/media/logos/logo_negro.png'
+              : 'assets/media/logos/logo_blanco.png',
+          height: 40,
+        ),
         actions: [
           IconButton(icon: Icon(Icons.favorite_border), onPressed: () {}),
         ],
