@@ -45,8 +45,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     final brand = AppTheme.brandOf(context);
     final secondaryText = Theme.of(context).textTheme.bodyMedium?.color;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     // Filter users by search
     final filteredUsers = _searchQuery.isEmpty
         ? <User>[]
