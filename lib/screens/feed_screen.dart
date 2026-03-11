@@ -4,13 +4,15 @@ import '../db/database_helper.dart';
 import '../models/post.dart';
 import '../utils/strings.dart';
 import '../widgets/post_widget.dart';
+import '../theme/app_theme.dart';
 import 'profile_screen.dart';
 import 'reels_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   final User currentUser;
   final VoidCallback onLogout;
-  FeedScreen({required this.currentUser, required this.onLogout});
+  final Function(bool) onToggleTheme;
+  FeedScreen({required this.currentUser, required this.onLogout, required this.onToggleTheme});
 
   @override
   State<FeedScreen> createState() => _FeedScreenState();
@@ -27,7 +29,6 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _loadPosts() async {
-    // Show ALL posts in the feed as per requirements
     final posts = await DatabaseHelper.instance.getAllPosts();
     setState(() {
       _posts = posts;
@@ -38,15 +39,24 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final brand = AppTheme.brandOf(context);
+
     return Scaffold(
       appBar: _currentIndex == 0 ? AppBar(
         title: Image.asset(
-          Theme.of(context).brightness == Brightness.dark
+          isDark
               ? 'assets/media/logos/logo_negro.png'
               : 'assets/media/logos/logo_blanco.png',
           height: 40,
         ),
         actions: [
+          // Theme toggle - always visible
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, color: brand),
+            onPressed: () => widget.onToggleTheme(!isDark),
+            tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
+          ),
           IconButton(icon: Icon(Icons.favorite_border), onPressed: () {}),
         ],
       ) : null,

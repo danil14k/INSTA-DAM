@@ -105,8 +105,8 @@ class _MyAppState extends State<MyApp> {
       locale: _locale,
       home: _splashFinished
           ? (_currentUser == null
-              ? LoginScreen(onLogin: _onLogin)
-              : FeedScreen(currentUser: _currentUser!, onLogout: _onLogout))
+              ? LoginScreen(onLogin: _onLogin, onToggleTheme: _toggleTheme, isDark: _themeMode == ThemeMode.dark)
+              : FeedScreen(currentUser: _currentUser!, onLogout: _onLogout, onToggleTheme: _toggleTheme))
           : SplashScreen(onFinish: () {
               setState(() {
                 _splashFinished = true;
