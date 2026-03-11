@@ -5,6 +5,7 @@ import '../models/post.dart';
 import '../models/user.dart';
 import '../db/database_helper.dart';
 import '../screens/comments_screen.dart';
+import '../theme/app_theme.dart';
 
 class PostWidget extends StatefulWidget {
   final Post post;
@@ -62,7 +63,7 @@ class _PostWidgetState extends State<PostWidget> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Editar descripción'),
+        title: Text('Editar descripcion'),
         content: TextField(controller: _editCtrl),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancelar')),
@@ -97,60 +98,76 @@ class _PostWidgetState extends State<PostWidget> {
   }
 
   Widget _buildMediaContent() {
-    // Local media file
     if (_post.hasMedia) {
       if (_post.isImage) {
-        return Image.file(File(_post.mediaPath), fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _placeholder());
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.file(File(_post.mediaPath), fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _placeholder()),
+        );
       } else if (_post.isVideo && _videoController != null) {
         return _videoController!.value.isInitialized
-            ? GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _videoController!.value.isPlaying
-                        ? _videoController!.pause()
-                        : _videoController!.play();
-                  });
-                },
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    AspectRatio(
-                      aspectRatio: _videoController!.value.aspectRatio,
-                      child: VideoPlayer(_videoController!),
-                    ),
-                    if (!_videoController!.value.isPlaying)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black38,
-                          shape: BoxShape.circle,
-                        ),
-                        padding: EdgeInsets.all(12),
-                        child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _videoController!.value.isPlaying
+                          ? _videoController!.pause()
+                          : _videoController!.play();
+                    });
+                  },
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AspectRatio(
+                        aspectRatio: _videoController!.value.aspectRatio,
+                        child: VideoPlayer(_videoController!),
                       ),
-                  ],
+                      if (!_videoController!.value.isPlaying)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black38,
+                            shape: BoxShape.circle,
+                          ),
+                          padding: EdgeInsets.all(12),
+                          child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
+                        ),
+                    ],
+                  ),
                 ),
               )
             : _placeholder();
       }
     }
 
-    // Legacy: network image URL
     if (_post.imageUrl.isNotEmpty) {
-      return Image.network(_post.imageUrl, fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _placeholder());
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(_post.imageUrl, fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _placeholder()),
+      );
     }
 
-    // Text-only post — no media square
     return _placeholder();
   }
 
   Widget _placeholder() {
-    return Container(color: Colors.grey[200], child: Icon(Icons.image, size: 50, color: Colors.grey));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(Icons.image, size: 50, color: Theme.of(context).textTheme.bodyMedium?.color),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final brand = AppTheme.brandOf(context);
+    final secondaryText = Theme.of(context).textTheme.bodyMedium?.color;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -160,14 +177,14 @@ class _PostWidgetState extends State<PostWidget> {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: Colors.grey[300],
-                child: Icon(Icons.person, size: 20, color: Colors.white),
+                backgroundColor: brand.withValues(alpha: 0.2),
+                child: Icon(Icons.person, size: 20, color: brand),
               ),
               SizedBox(width: 10),
               Text(_post.username, style: TextStyle(fontWeight: FontWeight.bold)),
               if (_post.isVideo) ...[
                 SizedBox(width: 6),
-                Icon(Icons.videocam, size: 16, color: Colors.grey),
+                Icon(Icons.videocam, size: 16, color: secondaryText),
               ],
               Spacer(),
               IconButton(
@@ -181,15 +198,15 @@ class _PostWidgetState extends State<PostWidget> {
                         children: [
                           ListTile(
                             leading: Icon(Icons.edit),
-                            title: Text('Editar descripción'),
+                            title: Text('Editar descripcion'),
                             onTap: () {
                               Navigator.pop(context);
                               _showEditDialog();
                             },
                           ),
                           ListTile(
-                            leading: Icon(Icons.delete, color: Colors.red),
-                            title: Text('Borrar publicación', style: TextStyle(color: Colors.red)),
+                            leading: Icon(Icons.delete, color: AppTheme.error),
+                            title: Text('Borrar publicacion', style: TextStyle(color: AppTheme.error)),
                             onTap: () async {
                               await DatabaseHelper.instance.deletePost(_post.id!);
                               Navigator.pop(context);
@@ -205,14 +222,20 @@ class _PostWidgetState extends State<PostWidget> {
             ],
           ),
         ),
-        AspectRatio(
-          aspectRatio: 1.0,
-          child: _buildMediaContent(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: AspectRatio(
+            aspectRatio: 1.0,
+            child: _buildMediaContent(),
+          ),
         ),
         Row(
           children: [
             IconButton(
-              icon: Icon(_liked ? Icons.favorite : Icons.favorite_border, color: _liked ? Colors.red : null),
+              icon: Icon(
+                _liked ? Icons.favorite : Icons.favorite_border,
+                color: _liked ? brand : null,
+              ),
               onPressed: _toggleLike,
             ),
             IconButton(
@@ -254,19 +277,21 @@ class _PostWidgetState extends State<PostWidget> {
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Text(
                       'Ver comentarios ($_commentsCount)',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      style: TextStyle(color: secondaryText, fontSize: 14),
                     ),
                   ),
                 ),
               SizedBox(height: 4),
               Text(
                 _post.date,
-                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                style: TextStyle(color: secondaryText, fontSize: 12),
               ),
             ],
           ),
         ),
-        SizedBox(height: 12),
+        SizedBox(height: 8),
+        Divider(height: 1),
+        SizedBox(height: 4),
       ],
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/strings.dart';
+import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   final Function(bool) onToggleTheme;
@@ -45,6 +46,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final brand = AppTheme.brandOf(context);
+    final secondaryText = Theme.of(context).textTheme.bodyMedium?.color;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(Strings.t(context, 'settings'), style: TextStyle(fontWeight: FontWeight.bold)),
@@ -53,10 +57,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text('Account', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            child: Text('Account', style: TextStyle(color: secondaryText, fontWeight: FontWeight.bold)),
           ),
           SwitchListTile(
-            secondary: Icon(Icons.dark_mode_outlined),
+            secondary: Icon(Icons.dark_mode_outlined, color: brand),
             title: Text(Strings.t(context, 'dark_theme')),
             value: _dark,
             onChanged: (v) {
@@ -73,13 +77,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: Icon(Icons.language),
             title: Text(Strings.t(context, 'language')),
-            subtitle: Text(_lang == 'en' ? 'English' : 'Español'),
+            subtitle: Text(_lang == 'en' ? 'English' : 'Espanol'),
             trailing: DropdownButton<String>(
               value: _lang,
               underline: SizedBox(),
               items: [
                 DropdownMenuItem(value: 'en', child: Text('English')),
-                DropdownMenuItem(value: 'es', child: Text('Español')),
+                DropdownMenuItem(value: 'es', child: Text('Espanol')),
               ],
               onChanged: (v) {
                 if (v != null) {
@@ -102,8 +106,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           Divider(),
           ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
-            title: Text(Strings.t(context, 'logout'), style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            leading: Icon(Icons.logout, color: AppTheme.error),
+            title: Text(Strings.t(context, 'logout'), style: TextStyle(color: AppTheme.error, fontWeight: FontWeight.bold)),
             onTap: _logout,
           ),
         ],

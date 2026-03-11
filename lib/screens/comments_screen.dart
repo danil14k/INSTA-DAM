@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../db/database_helper.dart';
 import 'package:intl/intl.dart';
 import '../utils/strings.dart';
+import '../theme/app_theme.dart';
 
 class CommentsScreen extends StatefulWidget {
   final Post post;
@@ -47,6 +48,9 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final brand = AppTheme.brandOf(context);
+    final secondaryText = Theme.of(context).textTheme.bodyMedium?.color;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(Strings.t(context, 'comments')),
@@ -64,8 +68,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: Colors.grey[300],
-                  child: Icon(Icons.person, color: Colors.white, size: 20),
+                  backgroundColor: brand.withValues(alpha: 0.2),
+                  child: Icon(Icons.person, color: brand, size: 20),
                 ),
                 SizedBox(width: 12),
                 Expanded(
@@ -82,7 +86,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                         ),
                       ),
                       SizedBox(height: 4),
-                      Text(widget.post.date, style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text(widget.post.date, style: TextStyle(color: secondaryText, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -102,8 +106,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
                     children: [
                       CircleAvatar(
                         radius: 16,
-                        backgroundColor: Colors.grey[200],
-                        child: Icon(Icons.person, color: Colors.white, size: 18),
+                        backgroundColor: brand.withValues(alpha: 0.15),
+                        child: Icon(Icons.person, color: brand, size: 18),
                       ),
                       SizedBox(width: 12),
                       Expanded(
@@ -120,11 +124,11 @@ class _CommentsScreenState extends State<CommentsScreen> {
                               ),
                             ),
                             SizedBox(height: 4),
-                            Text(c.date, style: TextStyle(color: Colors.grey, fontSize: 11)),
+                            Text(c.date, style: TextStyle(color: secondaryText, fontSize: 11)),
                           ],
                         ),
                       ),
-                      Icon(Icons.favorite_border, size: 14, color: Colors.grey),
+                      Icon(Icons.favorite_border, size: 14, color: secondaryText),
                     ],
                   ),
                 );
@@ -138,8 +142,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: Colors.grey[300],
-                  child: Icon(Icons.person, color: Colors.white, size: 20),
+                  backgroundColor: brand.withValues(alpha: 0.2),
+                  child: Icon(Icons.person, color: brand, size: 20),
                 ),
                 SizedBox(width: 12),
                 Expanded(
@@ -148,6 +152,9 @@ class _CommentsScreenState extends State<CommentsScreen> {
                     decoration: InputDecoration(
                       hintText: '${Strings.t(context, 'add_comment')}...',
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
                     ),
                   ),
                 ),
@@ -155,7 +162,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                   onPressed: _add,
                   child: Text(
                     Strings.t(context, 'publish'),
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: brand),
                   ),
                 ),
               ],

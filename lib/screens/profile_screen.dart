@@ -4,6 +4,7 @@ import '../models/user.dart';
 import '../db/database_helper.dart';
 import '../models/post.dart';
 import '../widgets/post_widget.dart';
+import '../theme/app_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User currentUser;
@@ -63,6 +64,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final brand = AppTheme.brandOf(context);
+    final secondaryText = Theme.of(context).textTheme.bodyMedium?.color;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.currentUser.username, style: TextStyle(fontWeight: FontWeight.bold)),
@@ -82,8 +87,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundColor: Colors.grey[300],
-                  child: Icon(Icons.person, size: 50, color: Colors.white),
+                  backgroundColor: brand.withValues(alpha: 0.2),
+                  child: Icon(Icons.person, size: 50, color: brand),
                 ),
                 Expanded(
                   child: Row(
@@ -104,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(_displayName ?? widget.currentUser.username, style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('Digital Creator', style: TextStyle(color: Colors.grey)),
+                Text('Digital Creator', style: TextStyle(color: secondaryText)),
                 Text('Flutter Developer | InstaDAM app'),
               ],
             ),
@@ -114,13 +119,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Expanded(
                 child: IconButton(
-                  icon: Icon(Icons.grid_on, color: _isGridView ? null : Colors.grey),
+                  icon: Icon(Icons.grid_on, color: _isGridView ? brand : secondaryText),
                   onPressed: () => setState(() => _isGridView = true),
                 ),
               ),
               Expanded(
                 child: IconButton(
-                  icon: Icon(Icons.person_pin_outlined, color: !_isGridView ? null : Colors.grey),
+                  icon: Icon(Icons.person_pin_outlined, color: !_isGridView ? brand : secondaryText),
                   onPressed: () => setState(() => _isGridView = false),
                 ),
               ),
@@ -142,7 +147,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: _showFilteredFeed,
                   child: post.imageUrl.isNotEmpty
                       ? Image.network(post.imageUrl, fit: BoxFit.cover)
-                      : Container(color: Colors.grey[200], child: Icon(Icons.image, color: Colors.grey)),
+                      : Container(
+                          color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+                          child: Icon(Icons.image, color: secondaryText),
+                        ),
                 );
               },
             ),
@@ -158,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         children: [
           Text(count.toString(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text(label, style: TextStyle(color: Colors.grey)),
+          Text(label, style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)),
         ],
       ),
     );
