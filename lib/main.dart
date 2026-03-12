@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart'; // <-- Importación de Firebase
 import 'package:shared_preferences/shared_preferences.dart';
+import 'firebase_options.dart'; // <-- Importación de las opciones de Firebase
+
 import 'screens/login_screen.dart';
 import 'screens/feed_screen.dart';
 import 'screens/create_post_screen.dart';
@@ -11,11 +14,23 @@ import 'db/database_helper.dart';
 import 'models/user.dart';
 
 void main() async {
+  // Asegura que los bindings de Flutter estén listos antes de inicializar plugins
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 1. Inicializar Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // 2. Inicializar tu base de datos local SQLite
   await DatabaseHelper.instance.init();
+
+  // 3. Cargar las preferencias de usuario
   final prefs = await SharedPreferences.getInstance();
   final remembered = prefs.getBool('remembered') ?? false;
   final username = prefs.getString('username');
+
+  // Arrancar la app con los datos cargados
   runApp(MyApp(startRemembered: remembered, username: username));
 }
 
@@ -105,13 +120,13 @@ class _MyAppState extends State<MyApp> {
       locale: _locale,
       home: _splashFinished
           ? (_currentUser == null
-              ? LoginScreen(onLogin: _onLogin, onToggleTheme: _toggleTheme, isDark: _themeMode == ThemeMode.dark)
-              : FeedScreen(currentUser: _currentUser!, onLogout: _onLogout, onToggleTheme: _toggleTheme))
+          ? LoginScreen(onLogin: _onLogin, onToggleTheme: _toggleTheme, isDark: _themeMode == ThemeMode.dark)
+          : FeedScreen(currentUser: _currentUser!, onLogout: _onLogout, onToggleTheme: _toggleTheme))
           : SplashScreen(onFinish: () {
-              setState(() {
-                _splashFinished = true;
-              });
-            }),
+        setState(() {
+          _splashFinished = true;
+        });
+      }),
       routes: {
         '/create': (_) => CreatePostScreen(currentUser: _currentUser!),
         '/profile': (_) => ProfileScreen(currentUser: _currentUser!),
