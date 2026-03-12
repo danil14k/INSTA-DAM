@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../models/user.dart';
 import '../theme/app_theme.dart';
 
@@ -26,7 +26,7 @@ class _MentionUsersScreenState extends State<MentionUsersScreen> {
   }
 
   void _loadUsers() async {
-    final users = await DatabaseHelper.instance.getAllUsers();
+    final users = await FirestoreService.instance.getAllUsers();
     setState(() {
       _users = users.where((u) => u.username != widget.currentUsername).toList();
     });

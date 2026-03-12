@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../models/user.dart';
 import '../models/post.dart';
 import '../widgets/post_widget.dart';
@@ -30,12 +30,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void _loadData() async {
-    final user = await DatabaseHelper.instance.getUserByUsername(widget.username);
-    final posts = await DatabaseHelper.instance.getAllPosts(username: widget.username);
-    final following = await DatabaseHelper.instance.isFollowing(
+    final user = await FirestoreService.instance.getUserByUsername(widget.username);
+    final posts = await FirestoreService.instance.getAllPosts(username: widget.username);
+    final following = await FirestoreService.instance.isFollowing(
         widget.currentUser.username, widget.username);
-    final followers = await DatabaseHelper.instance.getFollowersCount(widget.username);
-    final followingCount = await DatabaseHelper.instance.getFollowingCount(widget.username);
+    final followers = await FirestoreService.instance.getFollowersCount(widget.username);
+    final followingCount = await FirestoreService.instance.getFollowingCount(widget.username);
     setState(() {
       _user = user;
       _userPosts = posts;
@@ -47,9 +47,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   void _toggleFollow() async {
     if (_isFollowing) {
-      await DatabaseHelper.instance.unfollowUser(widget.currentUser.username, widget.username);
+      await FirestoreService.instance.unfollowUser(widget.currentUser.username, widget.username);
     } else {
-      await DatabaseHelper.instance.followUser(widget.currentUser.username, widget.username);
+      await FirestoreService.instance.followUser(widget.currentUser.username, widget.username);
     }
     _loadData();
   }

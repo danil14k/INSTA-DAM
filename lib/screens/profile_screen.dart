@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../models/post.dart';
 import '../widgets/post_widget.dart';
 import '../theme/app_theme.dart';
@@ -31,15 +31,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _loadData() async {
-    final user = await DatabaseHelper.instance.getUserByUsername(widget.currentUser.username);
+    final user = await FirestoreService.instance.getUserByUsername(widget.currentUser.username);
     if (user != null) {
       widget.currentUser.displayName = user.displayName;
       widget.currentUser.bio = user.bio;
       widget.currentUser.profileImagePath = user.profileImagePath;
     }
-    final posts = await DatabaseHelper.instance.getAllPosts(username: widget.currentUser.username);
-    final followers = await DatabaseHelper.instance.getFollowersCount(widget.currentUser.username);
-    final following = await DatabaseHelper.instance.getFollowingCount(widget.currentUser.username);
+    final posts = await FirestoreService.instance.getAllPosts(username: widget.currentUser.username);
+    final followers = await FirestoreService.instance.getFollowersCount(widget.currentUser.username);
+    final following = await FirestoreService.instance.getFollowingCount(widget.currentUser.username);
     setState(() {
       _postCount = posts.length;
       _userPosts = posts;
@@ -140,9 +140,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildStatColumn(_postCount, 'Posts', onTap: _showFilteredFeed),
                       _buildStatColumn(_followersCount, 'Followers', onTap: () =>
-                        _showUserList('Followers', () => DatabaseHelper.instance.getFollowers(widget.currentUser.username))),
+                        _showUserList('Followers', () => FirestoreService.instance.getFollowers(widget.currentUser.username))),
                       _buildStatColumn(_followingCount, 'Following', onTap: () =>
-                        _showUserList('Following', () => DatabaseHelper.instance.getFollowing(widget.currentUser.username))),
+                        _showUserList('Following', () => FirestoreService.instance.getFollowing(widget.currentUser.username))),
                     ],
                   ),
                 ),

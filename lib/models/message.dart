@@ -1,5 +1,5 @@
 class Message {
-  int? id;
+  String? id;
   String senderUsername;
   String receiverUsername;
   String text;
@@ -16,20 +16,19 @@ class Message {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
         'senderUsername': senderUsername,
         'receiverUsername': receiverUsername,
         'text': text,
         'date': date,
-        'read': read ? 1 : 0,
+        'read': read,
       };
 
-  factory Message.fromMap(Map<String, dynamic> m) => Message(
-        id: m['id'],
+  factory Message.fromMap(Map<String, dynamic> m, {String? docId}) => Message(
+        id: docId ?? m['id']?.toString(),
         senderUsername: m['senderUsername'],
         receiverUsername: m['receiverUsername'],
         text: m['text'],
         date: m['date'],
-        read: (m['read'] ?? 0) == 1,
+        read: m['read'] is bool ? m['read'] : (m['read'] ?? 0) == 1,
       );
 }

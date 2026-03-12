@@ -1,5 +1,5 @@
 class Post {
-  int? id;
+  String? id;
   String imageUrl;
   String username;
   String description;
@@ -26,7 +26,6 @@ class Post {
   bool get isImage => mediaType == 'image';
 
   Map<String, dynamic> toMap() => {
-        'id': id,
         'imageUrl': imageUrl,
         'username': username,
         'description': description,
@@ -37,8 +36,8 @@ class Post {
         'location': location,
       };
 
-  factory Post.fromMap(Map<String, dynamic> m) => Post(
-        id: m['id'],
+  factory Post.fromMap(Map<String, dynamic> m, {String? docId}) => Post(
+        id: docId ?? m['id']?.toString(),
         imageUrl: m['imageUrl'] ?? '',
         username: m['username'],
         description: m['description'],

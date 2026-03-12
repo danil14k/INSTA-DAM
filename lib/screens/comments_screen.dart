@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../models/comment.dart';
 import '../models/user.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import 'package:intl/intl.dart';
 import '../utils/strings.dart';
 import '../theme/app_theme.dart';
@@ -27,7 +27,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
   }
 
   void _load() async {
-    final c = await DatabaseHelper.instance.getCommentsForPost(widget.post.id!);
+    final c = await FirestoreService.instance.getCommentsForPost(widget.post.id!);
     setState(() => _comments = c);
   }
 
@@ -41,7 +41,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
       text: text,
       date: now,
     );
-    await DatabaseHelper.instance.createComment(comment);
+    await FirestoreService.instance.createComment(comment);
     _ctrl.clear();
     _load();
   }

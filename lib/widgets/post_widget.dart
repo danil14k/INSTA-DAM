@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../models/post.dart';
 import '../models/user.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../screens/comments_screen.dart';
 import '../screens/user_profile_screen.dart';
 import '../theme/app_theme.dart';
@@ -41,7 +41,7 @@ class _PostWidgetState extends State<PostWidget> {
   }
 
   void _loadPostUser() async {
-    final user = await DatabaseHelper.instance.getUserByUsername(_post.username);
+    final user = await FirestoreService.instance.getUserByUsername(_post.username);
     if (mounted) setState(() => _postUser = user);
   }
 
@@ -60,18 +60,18 @@ class _PostWidgetState extends State<PostWidget> {
 
   void _loadLikedState() async {
     if (_post.id == null) return;
-    final liked = await DatabaseHelper.instance.isPostLikedBy(_post.id!, widget.currentUser.username);
+    final liked = await FirestoreService.instance.isPostLikedBy(_post.id!, widget.currentUser.username);
     if (mounted) setState(() => _liked = liked);
   }
 
   void _loadBookmarkState() async {
     if (_post.id == null) return;
-    final bookmarked = await DatabaseHelper.instance.isPostBookmarkedBy(_post.id!, widget.currentUser.username);
+    final bookmarked = await FirestoreService.instance.isPostBookmarkedBy(_post.id!, widget.currentUser.username);
     if (mounted) setState(() => _bookmarked = bookmarked);
   }
 
   void _loadCommentsCount() async {
-    final c = await DatabaseHelper.instance.countCommentsForPost(_post.id!);
+    final c = await FirestoreService.instance.countCommentsForPost(_post.id!);
     if (mounted) setState(() => _commentsCount = c);
   }
 
@@ -87,7 +87,7 @@ class _PostWidgetState extends State<PostWidget> {
           TextButton(
             onPressed: () async {
               _post.description = editCtrl.text;
-              await DatabaseHelper.instance.updatePost(_post);
+              await FirestoreService.instance.updatePost(_post);
               Navigator.pop(context);
               setState(() {});
               widget.onChanged?.call();
@@ -102,11 +102,11 @@ class _PostWidgetState extends State<PostWidget> {
   void _toggleLike() async {
     setState(() => _liked = !_liked);
     if (_liked) {
-      await DatabaseHelper.instance.addLike(_post.id!, widget.currentUser.username);
+      await FirestoreService.instance.addLike(_post.id!, widget.currentUser.username);
     } else {
-      await DatabaseHelper.instance.removeLike(_post.id!, widget.currentUser.username);
+      await FirestoreService.instance.removeLike(_post.id!, widget.currentUser.username);
     }
-    final updated = await DatabaseHelper.instance.getAllPosts();
+    final updated = await FirestoreService.instance.getAllPosts();
     final refreshed = updated.firstWhere((p) => p.id == _post.id, orElse: () => _post);
     if (mounted) setState(() => _post = refreshed);
     widget.onChanged?.call();
@@ -115,9 +115,9 @@ class _PostWidgetState extends State<PostWidget> {
   void _toggleBookmark() async {
     setState(() => _bookmarked = !_bookmarked);
     if (_bookmarked) {
-      await DatabaseHelper.instance.addBookmark(_post.id!, widget.currentUser.username);
+      await FirestoreService.instance.addBookmark(_post.id!, widget.currentUser.username);
     } else {
-      await DatabaseHelper.instance.removeBookmark(_post.id!, widget.currentUser.username);
+      await FirestoreService.instance.removeBookmark(_post.id!, widget.currentUser.username);
     }
   }
 
@@ -256,7 +256,7 @@ class _PostWidgetState extends State<PostWidget> {
                             leading: Icon(Icons.delete, color: AppTheme.error),
                             title: Text('Borrar publicacion', style: TextStyle(color: AppTheme.error)),
                             onTap: () async {
-                              await DatabaseHelper.instance.deletePost(_post.id!);
+                              await FirestoreService.instance.deletePost(_post.id!);
                               Navigator.pop(context);
                               widget.onChanged?.call();
                             },

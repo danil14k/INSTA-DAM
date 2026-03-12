@@ -6,7 +6,8 @@ import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import '../models/post.dart';
 import '../models/user.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
+import '../db/storage_service.dart';
 import '../theme/app_theme.dart';
 import 'location_picker_screen.dart';
 import 'mention_users_screen.dart';
@@ -99,7 +100,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       mediaType: _mediaType,
       location: _location,
     );
-    await DatabaseHelper.instance.createPost(post);
+    final created = await FirestoreService.instance.createPost(post);
+    // Subir media a Firebase Storage si hay archivo seleccionado
+    if (_selectedFile != null && created.id != null) {
+      try {
+        final url = await StorageService.instance.uploadPostMedia(created.id!, _selectedFile!);
+        created.mediaPath = url;
+        await FirestoreService.instance.updatePost(created);
+      } catch (_) {
+        // Si falla la subida a Storage, el post se mantiene con la ruta local
+      }
+    }
     Navigator.pop(context);
   }
 

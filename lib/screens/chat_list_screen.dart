@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../models/user.dart';
 import '../models/message.dart';
 import '../theme/app_theme.dart';
@@ -26,8 +26,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   void _load() async {
-    final chats = await DatabaseHelper.instance.getChatList(widget.currentUser.username);
-    final users = await DatabaseHelper.instance.getAllUsers();
+    final chats = await FirestoreService.instance.getChatList(widget.currentUser.username);
+    final users = await FirestoreService.instance.getAllUsers();
     setState(() {
       _chats = chats;
       _allUsers = users.where((u) => u.username != widget.currentUser.username).toList();

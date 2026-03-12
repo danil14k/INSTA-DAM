@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../models/user.dart';
 import '../utils/strings.dart';
 import '../theme/app_theme.dart';
@@ -25,11 +25,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passCtrl.text.trim();
     if (username.isEmpty || password.isEmpty) return;
 
-    var user = await DatabaseHelper.instance.login(username, password);
+    var user = await FirestoreService.instance.login(username, password);
     if (user == null) {
-      final existing = await DatabaseHelper.instance.getUserByUsername(username);
+      final existing = await FirestoreService.instance.getUserByUsername(username);
       if (existing == null) {
-        user = await DatabaseHelper.instance.createUser(User(username: username, password: password, displayName: username));
+        user = await FirestoreService.instance.createUser(User(username: username, password: password, displayName: username));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid password')));
         return;

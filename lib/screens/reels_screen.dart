@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../models/post.dart';
 import '../models/user.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../theme/app_theme.dart';
 import 'comments_screen.dart';
 import 'user_profile_screen.dart';
@@ -29,7 +29,7 @@ class _ReelsScreenState extends State<ReelsScreen> {
   }
 
   void _loadMediaPosts() async {
-    final posts = await DatabaseHelper.instance.getMediaPosts();
+    final posts = await FirestoreService.instance.getMediaPosts();
     setState(() => _mediaPosts = posts);
     if (posts.isNotEmpty) _initController(0);
   }
@@ -143,11 +143,11 @@ class _ReelItemState extends State<_ReelItem> {
 
   void _loadState() async {
     if (widget.post.id == null) return;
-    final liked = await DatabaseHelper.instance.isPostLikedBy(widget.post.id!, widget.currentUser.username);
-    final bookmarked = await DatabaseHelper.instance.isPostBookmarkedBy(widget.post.id!, widget.currentUser.username);
-    final comments = await DatabaseHelper.instance.countCommentsForPost(widget.post.id!);
-    final likes = await DatabaseHelper.instance.countLikesForPost(widget.post.id!);
-    final user = await DatabaseHelper.instance.getUserByUsername(widget.post.username);
+    final liked = await FirestoreService.instance.isPostLikedBy(widget.post.id!, widget.currentUser.username);
+    final bookmarked = await FirestoreService.instance.isPostBookmarkedBy(widget.post.id!, widget.currentUser.username);
+    final comments = await FirestoreService.instance.countCommentsForPost(widget.post.id!);
+    final likes = await FirestoreService.instance.countLikesForPost(widget.post.id!);
+    final user = await FirestoreService.instance.getUserByUsername(widget.post.username);
     if (mounted) {
       setState(() {
         _liked = liked;
@@ -165,9 +165,9 @@ class _ReelItemState extends State<_ReelItem> {
       _likeCount += _liked ? 1 : -1;
     });
     if (_liked) {
-      await DatabaseHelper.instance.addLike(widget.post.id!, widget.currentUser.username);
+      await FirestoreService.instance.addLike(widget.post.id!, widget.currentUser.username);
     } else {
-      await DatabaseHelper.instance.removeLike(widget.post.id!, widget.currentUser.username);
+      await FirestoreService.instance.removeLike(widget.post.id!, widget.currentUser.username);
     }
     widget.onPostUpdated?.call();
   }
@@ -175,9 +175,9 @@ class _ReelItemState extends State<_ReelItem> {
   void _toggleBookmark() async {
     setState(() => _bookmarked = !_bookmarked);
     if (_bookmarked) {
-      await DatabaseHelper.instance.addBookmark(widget.post.id!, widget.currentUser.username);
+      await FirestoreService.instance.addBookmark(widget.post.id!, widget.currentUser.username);
     } else {
-      await DatabaseHelper.instance.removeBookmark(widget.post.id!, widget.currentUser.username);
+      await FirestoreService.instance.removeBookmark(widget.post.id!, widget.currentUser.username);
     }
   }
 
@@ -185,7 +185,7 @@ class _ReelItemState extends State<_ReelItem> {
     await Navigator.push(context, MaterialPageRoute(
       builder: (_) => CommentsScreen(post: widget.post, currentUser: widget.currentUser),
     ));
-    final count = await DatabaseHelper.instance.countCommentsForPost(widget.post.id!);
+    final count = await FirestoreService.instance.countCommentsForPost(widget.post.id!);
     if (mounted) setState(() => _commentCount = count);
   }
 

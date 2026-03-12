@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../models/user.dart';
 import '../models/message.dart';
 import '../theme/app_theme.dart';
@@ -34,9 +34,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _load() async {
-    await DatabaseHelper.instance.markMessagesAsRead(
+    await FirestoreService.instance.markMessagesAsRead(
         widget.otherUser.username, widget.currentUser.username);
-    final msgs = await DatabaseHelper.instance.getConversation(
+    final msgs = await FirestoreService.instance.getConversation(
         widget.currentUser.username, widget.otherUser.username);
     setState(() => _messages = msgs);
     _scrollToBottom();
@@ -64,7 +64,7 @@ class _ChatScreenState extends State<ChatScreen> {
       text: text,
       date: now,
     );
-    await DatabaseHelper.instance.createMessage(msg);
+    await FirestoreService.instance.createMessage(msg);
     _ctrl.clear();
     _load();
   }

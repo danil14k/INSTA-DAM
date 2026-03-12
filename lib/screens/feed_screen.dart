@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
 import '../models/post.dart';
 import '../utils/strings.dart';
 import '../widgets/post_widget.dart';
@@ -30,7 +30,7 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _loadPosts() async {
-    final posts = await DatabaseHelper.instance.getAllPosts();
+    final posts = await FirestoreService.instance.getAllPosts();
     setState(() {
       _posts = posts;
     });

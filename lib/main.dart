@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // <-- Importación de Firebase
+import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'firebase_options.dart'; // <-- Importación de las opciones de Firebase
+import 'firebase_options.dart';
 
 import 'screens/login_screen.dart';
 import 'screens/feed_screen.dart';
@@ -10,27 +10,20 @@ import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
-import 'db/database_helper.dart';
+import 'db/firestore_service.dart';
 import 'models/user.dart';
 
 void main() async {
-  // Asegura que los bindings de Flutter estén listos antes de inicializar plugins
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Inicializar Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // 2. Inicializar tu base de datos local SQLite
-  await DatabaseHelper.instance.init();
-
-  // 3. Cargar las preferencias de usuario
   final prefs = await SharedPreferences.getInstance();
   final remembered = prefs.getBool('remembered') ?? false;
   final username = prefs.getString('username');
 
-  // Arrancar la app con los datos cargados
   runApp(MyApp(startRemembered: remembered, username: username));
 }
 
@@ -69,7 +62,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _loadUser(String username) async {
-    final user = await DatabaseHelper.instance.getUserByUsername(username);
+    final user = await FirestoreService.instance.getUserByUsername(username);
     setState(() {
       _currentUser = user;
     });

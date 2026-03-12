@@ -4,7 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../db/database_helper.dart';
+import '../db/firestore_service.dart';
+import '../db/storage_service.dart';
 import '../models/user.dart';
 import '../theme/app_theme.dart';
 
@@ -60,7 +61,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     // Check if username changed and if new one is taken
     if (newUsername != widget.currentUser.username) {
-      final existing = await DatabaseHelper.instance.getUserByUsername(newUsername);
+      final existing = await FirestoreService.instance.getUserByUsername(newUsername);
       if (existing != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('El nombre de usuario "$newUsername" ya existe')),
@@ -74,7 +75,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     widget.currentUser.profileImagePath = _profileImagePath;
     widget.currentUser.username = newUsername;
 
-    await DatabaseHelper.instance.updateUser(widget.currentUser);
+    // Subir foto de perfil a Firebase Storage si cambió
+    if (_profileImagePath.isNotEmpty && _profileImagePath != widget.currentUser.profileImagePath) {
+      try {
+        final url = await StorageService.instance.uploadProfileImage(
+          newUsername, File(_profileImagePath));
+        widget.currentUser.profileImagePath = url;
+      } catch (_) {
+        // Si falla la subida, mantener la ruta local
+      }
+    }
+
+    await FirestoreService.instance.updateUser(widget.currentUser);
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('displayName', widget.currentUser.displayName ?? newUsername);
