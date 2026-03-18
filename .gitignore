@@ -1,1 +1,26 @@
-# Minimal gitignore
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.swift
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+
+# Misc
+*.lock
+!pubspec.lock
