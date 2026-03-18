@@ -18,27 +18,50 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _userCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _passFocus = FocusNode();
+
   bool _remember = false;
+  bool _loading = false;
+  String? _error;
 
   void _login() async {
     final username = _userCtrl.text.trim();
     final password = _passCtrl.text.trim();
     if (username.isEmpty || password.isEmpty) return;
 
-    var user = await FirestoreService.instance.login(username, password);
-    if (user == null) {
-      final existing = await FirestoreService.instance.getUserByUsername(username);
-      if (existing == null) {
-        user = await FirestoreService.instance.createUser(User(username: username, password: password, displayName: username));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid password')));
-        return;
-      }
-    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('displayName', user.displayName ?? user.username);
-    widget.onLogin(user, remember: _remember);
+    try {
+      var user = await FirestoreService.instance.login(username, password);
+      if (user == null) {
+        final existing = await FirestoreService.instance.getUserByUsername(username);
+        if (existing == null) {
+          user = await FirestoreService.instance.createUser(User(username: username, password: password, displayName: username));
+        } else {
+          setState(() => _error = 'Invalid password');
+          return;
+        }
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('displayName', user.displayName ?? user.username);
+      widget.onLogin(user, remember: _remember);
+    } catch (e) {
+      setState(() => _error = 'An error occurred. Please try again.');
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _userCtrl.dispose();
+    _passCtrl.dispose();
+    _passFocus.dispose();
+    super.dispose();
   }
 
   @override
@@ -54,51 +77,95 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset(
-                      isDark
-                          ? 'assets/media/logos/logo_negro.png'
-                          : 'assets/media/logos/logo_blanco.png',
-                      width: 100,
-                      height: 100,
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        isDark
+                            ? 'assets/media/logos/logo_negro.png'
+                            : 'assets/media/logos/logo_blanco.png',
+                        width: 100,
+                        height: 100,
+                      ),
                     ),
                   ),
                   SizedBox(height: 24),
-                  Text(
-                    'InstaDAM',
-                    style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+                  Center(
+                    child: Text(
+                      'InstaDAM',
+                      style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   SizedBox(height: 40),
+
+                  // Global Error Message
+                  if (_error != null)
+                    Semantics(
+                      liveRegion: true,
+                      child: Center(
+                        child: Text(
+                          _error!,
+                          style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  if (_error != null) SizedBox(height: 16),
+
+                  // Username Field
+                  Text(Strings.t(context, 'username_label'), style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
                   TextField(
                     controller: _userCtrl,
                     decoration: InputDecoration(
                       hintText: Strings.t(context, 'username_label'),
+                      errorText: _userCtrl.text.isEmpty ? 'Username cannot be empty' : null,
                     ),
+                    onSubmitted: (_) => _passFocus.requestFocus(),
+                    textInputAction: TextInputAction.next,
                   ),
-                  SizedBox(height: 12),
+                  SizedBox(height: 16),
+
+                  // Password Field
+                  Text(Strings.t(context, 'password_label'), style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
                   TextField(
                     controller: _passCtrl,
+                    focusNode: _passFocus,
                     decoration: InputDecoration(
                       hintText: Strings.t(context, 'password_label'),
+                      errorText: _passCtrl.text.isEmpty ? 'Password cannot be empty' : null,
                     ),
                     obscureText: true,
                   ),
                   SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Checkbox(value: _remember, onChanged: (v) => setState(() => _remember = v ?? false)),
-                      Text(Strings.t(context, 'remember')),
-                    ],
+
+                  // Remember me Switch
+                  Semantics(
+                    toggled: _remember,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(Strings.t(context, 'remember'), style: TextStyle(fontSize: 16)),
+                        Switch(value: _remember, onChanged: (v) => setState(() => _remember = v)),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 20),
+
+                  // Login Button
                   SizedBox(
                     width: double.infinity,
-                    height: 48,
                     child: ElevatedButton(
-                      onPressed: _login,
-                      child: Text(Strings.t(context, 'enter'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      onPressed: _loading ? null : _login,
+                      child: _loading
+                          ? CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+                          : Text(Strings.t(context, 'enter'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 48),
+                      ),
                     ),
                   ),
                   SizedBox(height: 40),
@@ -115,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          // Theme toggle button - always visible
+          // Theme toggle button
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             right: 12,
