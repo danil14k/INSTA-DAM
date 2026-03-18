@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   void _announceLoading() {
     Future.delayed(Duration.zero, () {
-      SemanticsService.announce('Carregant aplicacio', TextDirection.ltr);
+      SemanticsService.announce('Cargando aplicación', TextDirection.ltr);
     });
   }
 
@@ -67,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Semantics(
-                  label: 'InstaDAM logo',
+                  label: 'Logo de InstaDAM',
                   image: true,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
@@ -83,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 const SizedBox(height: 40),
                 Semantics(
                   liveRegion: true,
-                  label: "L'aplicacio s'esta carregant",
+                  label: "La aplicación se está cargando",
                   child: SizedBox(
                     width: 28,
                     height: 28,

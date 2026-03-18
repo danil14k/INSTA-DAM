@@ -176,7 +176,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _bioCtrl,
               maxLines: 4,
               decoration: InputDecoration(
-                labelText: 'Bio',
+                labelText: 'Biografía',
                 prefixIcon: Padding(
                   padding: EdgeInsets.only(bottom: 60),
                   child: Icon(Icons.info_outline),

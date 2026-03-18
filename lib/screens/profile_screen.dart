@@ -139,10 +139,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildStatColumn(_postCount, 'Posts', onTap: _showFilteredFeed),
-                      _buildStatColumn(_followersCount, 'Followers', onTap: () =>
-                        _showUserList('Followers', () => FirestoreService.instance.getFollowers(widget.currentUser.username))),
-                      _buildStatColumn(_followingCount, 'Following', onTap: () =>
-                        _showUserList('Following', () => FirestoreService.instance.getFollowing(widget.currentUser.username))),
+                      _buildStatColumn(_followersCount, 'Seguidores', onTap: () =>
+                        _showUserList('Seguidores', () => FirestoreService.instance.getFollowers(widget.currentUser.username))),
+                      _buildStatColumn(_followingCount, 'Siguiendo', onTap: () =>
+                        _showUserList('Siguiendo', () => FirestoreService.instance.getFollowing(widget.currentUser.username))),
                     ],
                   ),
                 ),
@@ -158,7 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (widget.currentUser.bio.isNotEmpty)
                   Text(widget.currentUser.bio, style: TextStyle(color: secondaryText))
                 else
-                  Text('Flutter Developer | InstaDAM app', style: TextStyle(color: secondaryText)),
+                  Text('Desarrollador Flutter | App InstaDAM', style: TextStyle(color: secondaryText)),
               ],
             ),
           ),

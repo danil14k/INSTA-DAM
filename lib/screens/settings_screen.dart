@@ -16,7 +16,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _dark = false;
   bool _notifs = true;
-  String _lang = 'en';
+  String _lang = 'es';
 
   @override
   void initState() {
@@ -57,7 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text('Account', style: TextStyle(color: secondaryText, fontWeight: FontWeight.bold)),
+            child: Text('Cuenta', style: TextStyle(color: secondaryText, fontWeight: FontWeight.bold)),
           ),
           SwitchListTile(
             secondary: Icon(Icons.dark_mode_outlined, color: brand),
@@ -77,13 +77,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: Icon(Icons.language),
             title: Text(Strings.t(context, 'language')),
-            subtitle: Text(_lang == 'en' ? 'English' : 'Espanol'),
+            subtitle: Text(_lang == 'en' ? 'Inglés' : 'Español'),
             trailing: DropdownButton<String>(
               value: _lang,
               underline: SizedBox(),
               items: [
-                DropdownMenuItem(value: 'en', child: Text('English')),
-                DropdownMenuItem(value: 'es', child: Text('Espanol')),
+                DropdownMenuItem(value: 'en', child: Text('Inglés')),
+                DropdownMenuItem(value: 'es', child: Text('Español')),
               ],
               onChanged: (v) {
                 if (v != null) {
@@ -96,12 +96,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Divider(),
           ListTile(
             leading: Icon(Icons.info_outline),
-            title: Text('About'),
+            title: Text('Acerca de'),
             trailing: Icon(Icons.chevron_right),
           ),
           ListTile(
             leading: Icon(Icons.help_outline),
-            title: Text('Help'),
+            title: Text('Ayuda'),
             trailing: Icon(Icons.chevron_right),
           ),
           Divider(),

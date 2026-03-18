@@ -49,13 +49,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: Icon(Icons.photo_library), title: Text('Imagen de galeria'),
+            ListTile(leading: Icon(Icons.photo_library), title: Text('Imagen de galería'),
               onTap: () { Navigator.pop(ctx); _pickImage(ImageSource.gallery); }),
-            ListTile(leading: Icon(Icons.camera_alt), title: Text('Tomar foto'),
+            ListTile(leading: Icon(Icons.camera_alt), title: Text('Hacer foto'),
               onTap: () { Navigator.pop(ctx); _pickImage(ImageSource.camera); }),
-            ListTile(leading: Icon(Icons.video_library), title: Text('Video de galeria'),
+            ListTile(leading: Icon(Icons.video_library), title: Text('Vídeo de galería'),
               onTap: () { Navigator.pop(ctx); _pickVideo(ImageSource.gallery); }),
-            ListTile(leading: Icon(Icons.videocam), title: Text('Grabar video'),
+            ListTile(leading: Icon(Icons.videocam), title: Text('Grabar vídeo'),
               onTap: () { Navigator.pop(ctx); _pickVideo(ImageSource.camera); }),
           ],
         ),
@@ -170,7 +170,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
                         Icon(Icons.videocam, color: Colors.white, size: 60),
                         SizedBox(height: 8),
-                        Text('Video seleccionado', style: TextStyle(color: Colors.white)),
+                        Text('Vídeo seleccionado', style: TextStyle(color: Colors.white)),
                       ])),
                     )),
                   Positioned(top: 8, right: 8, child: GestureDetector(
@@ -194,7 +194,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     controller: _descCtrl,
                     maxLines: null,
                     decoration: InputDecoration(
-                      hintText: 'Escribe un pie de foto... (usa @usuario para mencionar)',
+                      hintText: 'Escribe un pie de foto... (usa @usuario para etiquetar)',
                       border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none, filled: false,
                     ),
                   )),
@@ -218,11 +218,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ),
 
             Divider(),
-            ListTile(leading: Icon(Icons.photo_library, color: brand), title: Text('Anadir foto o video'), onTap: _showMediaPicker),
+            ListTile(leading: Icon(Icons.photo_library, color: brand), title: Text('Añadir foto o vídeo'), onTap: _showMediaPicker),
             Divider(),
             ListTile(
               leading: Icon(Icons.location_on, color: _location.isNotEmpty ? brand : null),
-              title: Text(_location.isNotEmpty ? _location : 'Anadir ubicacion'),
+              title: Text(_location.isNotEmpty ? _location : 'Añadir ubicación'),
               trailing: _location.isNotEmpty
                   ? IconButton(icon: Icon(Icons.close, size: 18), onPressed: () => setState(() => _location = ''))
                   : Icon(Icons.chevron_right),

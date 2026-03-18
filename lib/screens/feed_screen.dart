@@ -74,11 +74,11 @@ class _FeedScreenState extends State<FeedScreen> {
           }
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Messages'),
-          BottomNavigationBarItem(icon: Icon(Icons.add_box_outlined), label: 'Add'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Mensajes'),
+          BottomNavigationBarItem(icon: Icon(Icons.add_box_outlined), label: 'Crear'),
           BottomNavigationBarItem(icon: Icon(Icons.movie_outlined), label: 'Reels'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
         ],
       ),
     );
@@ -110,7 +110,7 @@ class _FeedScreenState extends State<FeedScreen> {
       case 4:
         return ProfileScreen(currentUser: widget.currentUser);
       default:
-        return Center(child: Text('Section $_currentIndex Coming Soon'));
+        return Center(child: Text('Sección $_currentIndex próximamente'));
     }
   }
 }

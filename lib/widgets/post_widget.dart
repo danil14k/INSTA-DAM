@@ -80,7 +80,7 @@ class _PostWidgetState extends State<PostWidget> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Editar descripcion'),
+        title: Text('Editar descripción'),
         content: TextField(controller: editCtrl),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancelar')),
@@ -249,12 +249,12 @@ class _PostWidgetState extends State<PostWidget> {
                         children: [
                           ListTile(
                             leading: Icon(Icons.edit),
-                            title: Text('Editar descripcion'),
+                            title: Text('Editar descripción'),
                             onTap: () { Navigator.pop(context); _showEditDialog(); },
                           ),
                           ListTile(
                             leading: Icon(Icons.delete, color: AppTheme.error),
-                            title: Text('Borrar publicacion', style: TextStyle(color: AppTheme.error)),
+                            title: Text('Borrar publicación', style: TextStyle(color: AppTheme.error)),
                             onTap: () async {
                               await FirestoreService.instance.deletePost(_post.id!);
                               Navigator.pop(context);
@@ -303,7 +303,7 @@ class _PostWidgetState extends State<PostWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${_post.likes} likes', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('${_post.likes} Me gusta', style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 4),
               // Username + description with @mentions
               Row(

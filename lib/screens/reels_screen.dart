@@ -82,7 +82,7 @@ class _ReelsScreenState extends State<ReelsScreen> {
       return Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: Text('No hay reels todavia', style: TextStyle(color: Colors.white, fontSize: 18)),
+          child: Text('No hay reels todavía', style: TextStyle(color: Colors.white, fontSize: 18)),
         ),
       );
     }

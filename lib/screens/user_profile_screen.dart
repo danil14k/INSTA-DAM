@@ -109,8 +109,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildStat(_userPosts.length, 'Posts'),
-                      _buildStat(_followersCount, 'Followers'),
-                      _buildStat(_followingCount, 'Following'),
+                      _buildStat(_followersCount, 'Seguidores'),
+                      _buildStat(_followingCount, 'Siguiendo'),
                     ],
                   ),
                 ),

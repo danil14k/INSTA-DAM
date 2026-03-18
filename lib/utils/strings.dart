@@ -51,7 +51,7 @@ class Strings {
 
   static String t(BuildContext context, String key) {
     final code = Localizations.localeOf(context).languageCode;
-    if (code == 'es') return _es[key] ?? key;
-    return _en[key] ?? key;
+    if (code == 'en') return _en[key] ?? key;
+    return _es[key] ?? key;
   }
 }

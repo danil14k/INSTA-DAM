@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (existing == null) {
           user = await FirestoreService.instance.createUser(User(username: username, password: password, displayName: username));
         } else {
-          setState(() => _error = 'Invalid password');
+          setState(() => _error = 'Contraseña incorrecta');
           return;
         }
       }
@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setString('displayName', user.displayName ?? user.username);
       widget.onLogin(user, remember: _remember);
     } catch (e) {
-      setState(() => _error = 'An error occurred. Please try again.');
+      setState(() => _error = 'Ha ocurrido un error. Inténtalo de nuevo.');
     } finally {
       setState(() => _loading = false);
     }
@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _userCtrl,
                     decoration: InputDecoration(
                       hintText: Strings.t(context, 'username_label'),
-                      errorText: _userCtrl.text.isEmpty ? 'Username cannot be empty' : null,
+                      errorText: _userCtrl.text.isEmpty ? 'El nombre de usuario no puede estar vacío' : null,
                     ),
                     onSubmitted: (_) => _passFocus.requestFocus(),
                     textInputAction: TextInputAction.next,
@@ -136,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     focusNode: _passFocus,
                     decoration: InputDecoration(
                       hintText: Strings.t(context, 'password_label'),
-                      errorText: _passCtrl.text.isEmpty ? 'Password cannot be empty' : null,
+                      errorText: _passCtrl.text.isEmpty ? 'La contraseña no puede estar vacía' : null,
                     ),
                     obscureText: true,
                   ),
@@ -174,8 +174,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Don't have an account? ", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)),
-                      Text("Sign up.", style: TextStyle(color: brand, fontWeight: FontWeight.bold)),
+                      Text("¿No tienes cuenta? ", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)),
+                      Text("Regístrate.", style: TextStyle(color: brand, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ],

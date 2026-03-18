@@ -13,25 +13,25 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   // Common locations for demo + custom search
   final List<String> _suggestions = [
     'Ilerna Online, Lleida',
-    'Barcelona, Spain',
-    'Madrid, Spain',
-    'Valencia, Spain',
-    'Sevilla, Spain',
-    'Zaragoza, Spain',
-    'Bilbao, Spain',
-    'Malaga, Spain',
-    'Lleida, Spain',
-    'Girona, Spain',
-    'Tarragona, Spain',
-    'Palma de Mallorca, Spain',
-    'Las Palmas, Spain',
-    'Alicante, Spain',
-    'San Sebastian, Spain',
-    'Salamanca, Spain',
-    'Granada, Spain',
-    'Cordoba, Spain',
-    'Valladolid, Spain',
-    'Murcia, Spain',
+    'Barcelona, España',
+    'Madrid, España',
+    'Valencia, España',
+    'Sevilla, España',
+    'Zaragoza, España',
+    'Bilbao, España',
+    'Málaga, España',
+    'Lleida, España',
+    'Girona, España',
+    'Tarragona, España',
+    'Palma de Mallorca, España',
+    'Las Palmas, España',
+    'Alicante, España',
+    'San Sebastián, España',
+    'Salamanca, España',
+    'Granada, España',
+    'Córdoba, España',
+    'Valladolid, España',
+    'Murcia, España',
   ];
 
   List<String> get _filtered {
@@ -53,7 +53,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ubicacion', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Ubicación', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: Column(
         children: [
@@ -63,7 +63,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               controller: _ctrl,
               autofocus: true,
               decoration: InputDecoration(
-                hintText: 'Buscar ubicacion...',
+                hintText: 'Buscar ubicación...',
                 prefixIcon: Icon(Icons.search, color: brand),
                 suffixIcon: _ctrl.text.isNotEmpty
                     ? IconButton(
@@ -87,7 +87,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           if (_ctrl.text.isNotEmpty && !_suggestions.any((s) => s.toLowerCase() == _ctrl.text.toLowerCase()))
             ListTile(
               leading: Icon(Icons.add_location, color: brand),
-              title: Text('Usar "${_ctrl.text}"', style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text('Usar: "${_ctrl.text}"', style: TextStyle(fontWeight: FontWeight.bold)),
               onTap: () => Navigator.pop(context, _ctrl.text.trim()),
             ),
           Divider(),

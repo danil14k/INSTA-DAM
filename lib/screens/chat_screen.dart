@@ -109,7 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: _messages.isEmpty
                 ? Center(
-                    child: Text('Enviale un mensaje', style: TextStyle(color: secondaryText)),
+                    child: Text('Envíale un mensaje', style: TextStyle(color: secondaryText)),
                   )
                 : ListView.builder(
                     controller: _scrollController,

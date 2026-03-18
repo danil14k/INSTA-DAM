@@ -40,7 +40,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.light;
-  Locale _locale = Locale('en');
+  Locale _locale = Locale('es');
   User? _currentUser;
   bool _splashFinished = false;
 
@@ -56,7 +56,7 @@ class _MyAppState extends State<MyApp> {
   void _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     final dark = prefs.getBool('darkTheme') ?? false;
-    final lang = prefs.getString('language') ?? 'en';
+    final lang = prefs.getString('language') ?? 'es';
     setState(() {
       _themeMode = dark ? ThemeMode.dark : ThemeMode.light;
       _locale = Locale(lang);
