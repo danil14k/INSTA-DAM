@@ -13,6 +13,8 @@ import 'theme/app_theme.dart';
 import 'db/firestore_service.dart';
 import 'models/user.dart';
 
+// PRUEBA_GITHUB: Esta línea es para verificar GitHub Desktop.
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
