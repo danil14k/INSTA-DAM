@@ -96,7 +96,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundColor: brand.withValues(alpha: 0.2),
+                  backgroundColor: brand.withAlpha(50),
                   backgroundImage: _user!.profileImagePath.isNotEmpty
                       ? FileImage(File(_user!.profileImagePath))
                       : null,
@@ -144,8 +144,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       style: _isFollowing
                           ? ElevatedButton.styleFrom(
                               backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
-                              foregroundColor: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
-                              side: BorderSide(color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider),
+                              foregroundColor: isDark ? AppTheme.darkText : AppTheme.lightText,
+                              side: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                             )
                           : null,
                       child: Text(_isFollowing ? 'Siguiendo' : 'Seguir'),

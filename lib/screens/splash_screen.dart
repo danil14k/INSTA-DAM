@@ -56,8 +56,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isDark
-                ? [AppTheme.darkBackground, const Color(0xFF0A2A2F)]
-                : [AppTheme.lightBackground, const Color(0xFFE8F7FA)],
+                ? [AppTheme.darkBg, const Color(0xFF0A2A2F)]
+                : [AppTheme.lightBg, const Color(0xFFE8F7FA)],
           ),
         ),
         child: Center(
