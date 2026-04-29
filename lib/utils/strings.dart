@@ -15,14 +15,38 @@ class Strings {
     'profile': 'Profile',
     'settings': 'Settings',
     'dark_theme': 'Dark theme',
-    'notifs': 'Notifications (simulated)',
+    'notifs': 'Notifications',
     'language': 'Language',
     'logout': 'Log out',
+    'logout_title': 'Log out',
+    'logout_confirm': 'Are you sure you want to log out?',
     'add_comment': 'Add comment',
     'publish': 'Publish',
     'edit_name': 'Edit name',
     'cancel': 'Cancel',
     'save': 'Save',
+    'delete_post': 'Delete Post',
+    'delete_confirm': 'Are you sure you want to delete this post?',
+    'delete': 'Delete',
+    'select_language': 'Select Language',
+    'appearance': 'Appearance & Accessibility',
+    'notifications_section': 'Notifications',
+    'info_section': 'Information',
+    'about': 'About InstaDAM',
+    'help': 'Help & Support',
+    'activated': 'Activated',
+    'disabled': 'Disabled',
+    'notif_on': 'Notifications activated',
+    'notif_off': 'Notifications deactivated',
+    'back_tooltip': 'Back to previous screen',
+    'edit_description': 'Edit description',
+    'post_options': 'Post options',
+    'like_active': 'Unlike. {count} people liked this',
+    'like_inactive': 'Like. {count} people liked this',
+    'comment_accessible': 'Comment. {count} comments',
+    'save_active': 'Remove from saved',
+    'save_inactive': 'Save post',
+    'view_comments': 'View all {count} comments',
   };
 
   static const _es = {
@@ -39,19 +63,49 @@ class Strings {
     'profile': 'Perfil',
     'settings': 'Ajustes',
     'dark_theme': 'Tema oscuro',
-    'notifs': 'Notificaciones (simulado)',
+    'notifs': 'Notificaciones',
     'language': 'Idioma',
     'logout': 'Cerrar sesión',
+    'logout_title': 'Cerrar sesión',
+    'logout_confirm': '¿Estás seguro de que quieres cerrar sesión?',
     'add_comment': 'Añadir comentario',
     'publish': 'Publicar',
     'edit_name': 'Editar nombre',
     'cancel': 'Cancelar',
     'save': 'Guardar',
+    'delete_post': 'Eliminar publicación',
+    'delete_confirm': '¿Estás seguro de que quieres eliminar esta publicación?',
+    'delete': 'Eliminar',
+    'select_language': 'Seleccionar idioma',
+    'appearance': 'Apariencia y Accesibilidad',
+    'notifications_section': 'Notificaciones',
+    'info_section': 'Información',
+    'about': 'Acerca de InstaDAM',
+    'help': 'Ayuda y soporte técnico',
+    'activated': 'Activado',
+    'disabled': 'Desactivado',
+    'notif_on': 'Notificaciones activadas',
+    'notif_off': 'Notificaciones desactivadas',
+    'back_tooltip': 'Volver a la pantalla anterior',
+    'edit_description': 'Editar descripción',
+    'post_options': 'Opciones de publicación',
+    'like_active': 'Quitar me gusta. A {count} personas les gusta esto',
+    'like_inactive': 'Me gusta. A {count} personas les gusta esto',
+    'comment_accessible': 'Comentar. {count} comentarios',
+    'save_active': 'Quitar de guardados',
+    'save_inactive': 'Guardar publicación',
+    'view_comments': 'Ver los {count} comentarios',
   };
 
-  static String t(BuildContext context, String key) {
+  static String t(BuildContext context, String key, {Map<String, String>? args}) {
     final code = Localizations.localeOf(context).languageCode;
-    if (code == 'en') return _en[key] ?? key;
-    return _es[key] ?? key;
+    String text = (code == 'en') ? (_en[key] ?? key) : (_es[key] ?? key);
+    
+    if (args != null) {
+      args.forEach((k, v) {
+        text = text.replaceAll('{$k}', v);
+      });
+    }
+    return text;
   }
 }

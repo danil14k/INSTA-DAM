@@ -7,6 +7,7 @@ import '../db/firestore_service.dart';
 import '../screens/comments_screen.dart';
 import '../screens/user_profile_screen.dart';
 import '../theme/app_theme.dart';
+import '../utils/strings.dart';
 import 'mention_text.dart';
 
 class PostWidget extends StatefulWidget {
@@ -80,10 +81,16 @@ class _PostWidgetState extends State<PostWidget> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Editar descripción'),
-        content: TextField(controller: editCtrl, autofocus: true),
+        title: Text(Strings.t(context, 'edit_description')),
+        content: TextField(
+          controller: editCtrl, 
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: Strings.t(context, 'description_label'),
+          ),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(Strings.t(context, 'cancel'))),
           TextButton(
             onPressed: () async {
               _post.description = editCtrl.text;
@@ -92,7 +99,28 @@ class _PostWidgetState extends State<PostWidget> {
               setState(() {});
               widget.onChanged?.call();
             },
-            child: const Text('Guardar'),
+            child: Text(Strings.t(context, 'save')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmation() async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(Strings.t(context, 'delete_post')),
+        content: Text(Strings.t(context, 'delete_confirm')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(Strings.t(context, 'cancel'))),
+          TextButton(
+            onPressed: () async {
+              await FirestoreService.instance.deletePost(_post.id!);
+              Navigator.pop(context);
+              widget.onChanged?.call();
+            },
+            child: Text(Strings.t(context, 'delete'), style: const TextStyle(color: AppTheme.igRed)),
           ),
         ],
       ),
@@ -233,7 +261,7 @@ class _PostWidgetState extends State<PostWidget> {
                 ),
               ),
               Semantics(
-                label: 'Opciones de publicación',
+                label: Strings.t(context, 'post_options'),
                 child: IconButton(
                   icon: const Icon(Icons.more_vert, size: 20),
                   onPressed: () {
@@ -245,16 +273,15 @@ class _PostWidgetState extends State<PostWidget> {
                           children: [
                             ListTile(
                               leading: const Icon(Icons.edit),
-                              title: const Text('Editar descripción'),
+                              title: Text(Strings.t(context, 'edit_description')),
                               onTap: () { Navigator.pop(context); _showEditDialog(); },
                             ),
                             ListTile(
                               leading: const Icon(Icons.delete, color: AppTheme.igRed),
-                              title: const Text('Borrar publicación', style: TextStyle(color: AppTheme.igRed)),
-                              onTap: () async {
-                                await FirestoreService.instance.deletePost(_post.id!);
+                              title: Text(Strings.t(context, 'delete_post'), style: const TextStyle(color: AppTheme.igRed)),
+                              onTap: () {
                                 Navigator.pop(context);
-                                widget.onChanged?.call();
+                                _showDeleteConfirmation();
                               },
                             ),
                           ],
@@ -275,7 +302,7 @@ class _PostWidgetState extends State<PostWidget> {
           child: Row(
             children: [
               Semantics(
-                label: _liked ? 'Quitar me gusta. A ${_post.likes} personas les gusta esto' : 'Me gusta. A ${_post.likes} personas les gusta esto',
+                label: Strings.t(context, _liked ? 'like_active' : 'like_inactive', args: {'count': _post.likes.toString()}),
                 child: IconButton(
                   icon: Icon(_liked ? Icons.favorite : Icons.favorite_border, 
                     color: _liked ? AppTheme.igRed : null,
@@ -286,7 +313,7 @@ class _PostWidgetState extends State<PostWidget> {
                 ),
               ),
               Semantics(
-                label: 'Comentar. $_commentsCount comentarios',
+                label: Strings.t(context, 'comment_accessible', args: {'count': _commentsCount.toString()}),
                 child: IconButton(
                   icon: const Icon(Icons.chat_bubble_outline, size: 24),
                   onPressed: () async {
@@ -299,12 +326,12 @@ class _PostWidgetState extends State<PostWidget> {
               ),
               const IconButton(
                 icon: Icon(Icons.send_outlined, size: 24),
-                onPressed: null, // Compartir no implementado
+                onPressed: null,
                 tooltip: 'Enviar',
               ),
               const Spacer(),
               Semantics(
-                label: _bookmarked ? 'Quitar de guardados' : 'Guardar publicación',
+                label: Strings.t(context, _bookmarked ? 'save_active' : 'save_inactive'),
                 child: IconButton(
                   icon: Icon(_bookmarked ? Icons.bookmark : Icons.bookmark_border, size: 26),
                   onPressed: _toggleBookmark,
@@ -322,7 +349,6 @@ class _PostWidgetState extends State<PostWidget> {
             children: [
               Text('${_post.likes} Me gusta', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: 4),
-              // Username + description
               RichText(
                 text: TextSpan(
                   style: Theme.of(context).textTheme.bodyMedium,
@@ -349,7 +375,7 @@ class _PostWidgetState extends State<PostWidget> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(top: 6.0),
-                    child: Text('Ver los $_commentsCount comentarios', 
+                    child: Text(Strings.t(context, 'view_comments', args: {'count': _commentsCount.toString()}), 
                       style: TextStyle(color: secondaryText, fontSize: 14, fontWeight: FontWeight.w400)),
                   ),
                 ),

@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=D:\Usuarios\jiranzoherraes2004\J.I.H\flutter_windows_3.35.3-stable\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\jiranzoherraes2004\Desktop\INSTA-DAM-main\INSTA-DAM-main"
+export "FLUTTER_ROOT=C:\Users\Iannumi24\flutter"
+export "FLUTTER_APPLICATION_PATH=C:\Users\Iannumi24\Desktop\INSTA-DAM"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=0.0.1"
