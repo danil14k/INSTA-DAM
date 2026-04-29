@@ -63,6 +63,11 @@ class FirestoreService {
     return p;
   }
 
+  Future<void> updatePost(Post p) async {
+    if (p.id == null) return;
+    await _posts.doc(p.id).update(p.toMap());
+  }
+
   Future<List<Post>> getAllPosts({String? username}) async {
     try {
       Query query = _posts;
