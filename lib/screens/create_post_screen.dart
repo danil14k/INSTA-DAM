@@ -27,18 +27,28 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   String _mediaType = '';
   String _location = '';
   List<String> _mentionedUsers = [];
+  bool _isLoading = false;
+  String? _errorText;
 
   Future<void> _pickImage(ImageSource source) async {
     final picked = await _picker.pickImage(source: source, imageQuality: 80);
     if (picked != null) {
-      setState(() { _selectedFile = File(picked.path); _mediaType = 'image'; });
+      setState(() { 
+        _selectedFile = File(picked.path); 
+        _mediaType = 'image'; 
+        _errorText = null;
+      });
     }
   }
 
   Future<void> _pickVideo(ImageSource source) async {
-    final picked = await _picker.pickVideo(source: source, maxDuration: Duration(seconds: 60));
+    final picked = await _picker.pickVideo(source: source, maxDuration: const Duration(seconds: 60));
     if (picked != null) {
-      setState(() { _selectedFile = File(picked.path); _mediaType = 'video'; });
+      setState(() { 
+        _selectedFile = File(picked.path); 
+        _mediaType = 'video'; 
+        _errorText = null;
+      });
     }
   }
 
@@ -49,14 +59,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: Icon(Icons.photo_library), title: Text('Imagen de galería'),
-              onTap: () { Navigator.pop(ctx); _pickImage(ImageSource.gallery); }),
-            ListTile(leading: Icon(Icons.camera_alt), title: Text('Hacer foto'),
-              onTap: () { Navigator.pop(ctx); _pickImage(ImageSource.camera); }),
-            ListTile(leading: Icon(Icons.video_library), title: Text('Vídeo de galería'),
-              onTap: () { Navigator.pop(ctx); _pickVideo(ImageSource.gallery); }),
-            ListTile(leading: Icon(Icons.videocam), title: Text('Grabar vídeo'),
-              onTap: () { Navigator.pop(ctx); _pickVideo(ImageSource.camera); }),
+            ListTile(
+              leading: const Icon(Icons.photo_library), 
+              title: const Text('Imagen de galería'),
+              onTap: () { Navigator.pop(ctx); _pickImage(ImageSource.gallery); }
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt), 
+              title: const Text('Hacer foto'),
+              onTap: () { Navigator.pop(ctx); _pickImage(ImageSource.camera); }
+            ),
+            ListTile(
+              leading: const Icon(Icons.video_library), 
+              title: const Text('Vídeo de galería'),
+              onTap: () { Navigator.pop(ctx); _pickVideo(ImageSource.gallery); }
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam), 
+              title: const Text('Grabar vídeo'),
+              onTap: () { Navigator.pop(ctx); _pickVideo(ImageSource.camera); }
+            ),
           ],
         ),
       ),
@@ -75,43 +97,72 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   void _submit() async {
     final desc = _descCtrl.text.trim();
-    if (desc.isEmpty && _selectedFile == null) return;
-    String mediaPath = '';
-    if (_selectedFile != null) {
-      mediaPath = await _saveMediaLocally(_selectedFile!);
+    
+    if (_selectedFile == null) {
+      setState(() => _errorText = 'Debes seleccionar una imagen o vídeo');
+      return;
+    }
+    
+    if (desc.isEmpty) {
+      setState(() => _errorText = 'La descripción es obligatoria');
+      return;
     }
 
-    // Add mentions to description if not already included
-    String finalDesc = desc;
-    for (final user in _mentionedUsers) {
-      if (!finalDesc.contains('@$user')) {
-        finalDesc += ' @$user';
-      }
-    }
+    setState(() {
+      _isLoading = true;
+      _errorText = null;
+    });
 
-    final now = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
-    final post = Post(
-      imageUrl: '',
-      username: widget.currentUser.username,
-      description: finalDesc,
-      date: now,
-      likes: 0,
-      mediaPath: mediaPath,
-      mediaType: _mediaType,
-      location: _location,
-    );
-    final created = await FirestoreService.instance.createPost(post);
-    // Subir media a Firebase Storage si hay archivo seleccionado
-    if (_selectedFile != null && created.id != null) {
-      try {
-        final url = await StorageService.instance.uploadPostMedia(created.id!, _selectedFile!);
-        created.mediaPath = url;
-        await FirestoreService.instance.updatePost(created);
-      } catch (_) {
-        // Si falla la subida a Storage, el post se mantiene con la ruta local
+    try {
+      String mediaPath = await _saveMediaLocally(_selectedFile!);
+
+      // Add mentions to description if not already included
+      String finalDesc = desc;
+      for (final user in _mentionedUsers) {
+        if (!finalDesc.contains('@$user')) {
+          finalDesc += ' @$user';
+        }
       }
+
+      final now = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
+      final post = Post(
+        imageUrl: '',
+        username: widget.currentUser.username,
+        description: finalDesc,
+        date: now,
+        likes: 0,
+        mediaPath: mediaPath,
+        mediaType: _mediaType,
+        location: _location,
+      );
+      
+      final created = await FirestoreService.instance.createPost(post);
+      
+      if (created.id != null) {
+        try {
+          final url = await StorageService.instance.uploadPostMedia(created.id!, _selectedFile!);
+          created.mediaPath = url;
+          await FirestoreService.instance.updatePost(created);
+        } catch (_) {
+          // Fallback to local path if storage fails
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Publicación compartida correctamente!'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorText = 'Error al publicar. Inténtalo de nuevo.';
+      });
     }
-    Navigator.pop(context);
   }
 
   void _removeMedia() {
@@ -142,62 +193,124 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     final brand = AppTheme.brandOf(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Nuevo Post', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Nuevo Post', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
-          TextButton(
-            onPressed: _submit,
-            child: Text('Compartir', style: TextStyle(color: brand, fontWeight: FontWeight.bold, fontSize: 16)),
-          ),
+          _isLoading 
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+              )
+            : Semantics(
+                label: 'Botón compartir publicación',
+                button: true,
+                child: TextButton(
+                  onPressed: _submit,
+                  child: Text(
+                    'Compartir', 
+                    style: TextStyle(color: brand, fontWeight: FontWeight.bold, fontSize: 16)
+                  ),
+                ),
+              ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_selectedFile != null)
-              Stack(
-                children: [
-                  if (_mediaType == 'image')
-                    AspectRatio(aspectRatio: 1.0, child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(_selectedFile!, fit: BoxFit.cover),
-                    ))
-                  else
-                    AspectRatio(aspectRatio: 1.0, child: Container(
-                      color: Colors.black,
-                      child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.videocam, color: Colors.white, size: 60),
-                        SizedBox(height: 8),
-                        Text('Vídeo seleccionado', style: TextStyle(color: Colors.white)),
-                      ])),
-                    )),
-                  Positioned(top: 8, right: 8, child: GestureDetector(
-                    onTap: _removeMedia,
-                    child: Container(
-                      decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                      padding: EdgeInsets.all(6),
-                      child: Icon(Icons.close, color: Colors.white, size: 20),
-                    ),
-                  )),
-                ],
+            // Media Selector Area
+            Semantics(
+              label: _selectedFile == null ? 'Selector de imagen. Cap imatge seleccionada' : 'Imatge seleccionada',
+              child: GestureDetector(
+                onTap: _selectedFile == null ? _showMediaPicker : null,
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: Container(
+                    width: double.infinity,
+                    color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+                    child: _selectedFile != null
+                      ? Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (_mediaType == 'image')
+                              Image.file(_selectedFile!, fit: BoxFit.cover)
+                            else
+                              const Center(child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.videocam, size: 60, color: AppTheme.igGrey),
+                                  Text('Vídeo seleccionado'),
+                                ],
+                              )),
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: GestureDetector(
+                                onTap: _removeMedia,
+                                child: Container(
+                                  decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                  padding: const EdgeInsets.all(8),
+                                  child: const Icon(Icons.close, color: Colors.white, size: 20),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_a_photo_outlined, size: 60, color: AppTheme.igGrey),
+                            SizedBox(height: 12),
+                            Text('Toca para añadir una foto o vídeo', style: TextStyle(color: AppTheme.igGrey)),
+                          ],
+                        ),
+                  ),
+                ),
               ),
+            ),
+
+            // Description Area
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(radius: 25, backgroundColor: brand.withValues(alpha: 0.2), child: Icon(Icons.person, color: brand, size: 30)),
-                  SizedBox(width: 12),
-                  Expanded(child: TextField(
-                    controller: _descCtrl,
-                    maxLines: null,
-                    decoration: InputDecoration(
-                      hintText: 'Escribe un pie de foto... (usa @usuario para etiquetar)',
-                      border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none, filled: false,
-                    ),
-                  )),
+                  const Text(
+                    'Descripción', 
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 20, 
+                        backgroundColor: brand.withAlpha(50), 
+                        child: Icon(Icons.person, color: brand, size: 24)
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _descCtrl,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            hintText: 'Escribe un pie de foto...',
+                            errorText: _errorText,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            filled: false,
+                          ),
+                          onChanged: (_) {
+                            if (_errorText != null) setState(() => _errorText = null);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -205,39 +318,40 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             // Mentioned users chips
             if (_mentionedUsers.isNotEmpty)
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Wrap(
                   spacing: 6,
                   children: _mentionedUsers.map((u) => Chip(
                     label: Text('@$u', style: TextStyle(color: brand, fontSize: 13)),
-                    backgroundColor: brand.withValues(alpha: 0.1),
-                    deleteIcon: Icon(Icons.close, size: 14),
+                    backgroundColor: brand.withAlpha(25),
+                    deleteIcon: const Icon(Icons.close, size: 14),
                     onDeleted: () => setState(() => _mentionedUsers.remove(u)),
                   )).toList(),
                 ),
               ),
 
-            Divider(),
-            ListTile(leading: Icon(Icons.photo_library, color: brand), title: Text('Añadir foto o vídeo'), onTap: _showMediaPicker),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.location_on, color: _location.isNotEmpty ? brand : null),
+              leading: Icon(Icons.location_on, color: _location.isNotEmpty ? brand : AppTheme.igGrey),
               title: Text(_location.isNotEmpty ? _location : 'Añadir ubicación'),
               trailing: _location.isNotEmpty
-                  ? IconButton(icon: Icon(Icons.close, size: 18), onPressed: () => setState(() => _location = ''))
-                  : Icon(Icons.chevron_right),
+                  ? IconButton(
+                      icon: const Icon(Icons.close, size: 18), 
+                      onPressed: () => setState(() => _location = '')
+                    )
+                  : const Icon(Icons.chevron_right),
               onTap: _pickLocation,
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.person_outline, color: _mentionedUsers.isNotEmpty ? brand : null),
+              leading: Icon(Icons.person_outline, color: _mentionedUsers.isNotEmpty ? brand : AppTheme.igGrey),
               title: Text(_mentionedUsers.isNotEmpty
-                  ? 'Etiquetados: ${_mentionedUsers.map((u) => '@$u').join(', ')}'
+                  ? 'Personas etiquetadas (${_mentionedUsers.length})'
                   : 'Etiquetar personas'),
-              trailing: Icon(Icons.chevron_right),
+              trailing: const Icon(Icons.chevron_right),
               onTap: _pickMentions,
             ),
-            Divider(),
+            const Divider(),
           ],
         ),
       ),

@@ -42,11 +42,97 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notifs', v);
     setState(() => _notifs = v);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(v ? 'Notificaciones activadas' : 'Notificaciones desactivadas'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
-  void _logout() async {
-    widget.onLogout();
-    Navigator.of(context).popUntil((route) => route.isFirst);
+  Future<void> _showLogoutConfirmation() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(Strings.t(context, 'logout_title') ?? 'Cerrar sesión'),
+          content: Text(Strings.t(context, 'logout_confirm') ?? '¿Estás seguro de que quieres cerrar sesión?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text(Strings.t(context, 'cancel') ?? 'Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                Strings.t(context, 'logout') ?? 'Cerrar sesión',
+                style: const TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                widget.onLogout();
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(Strings.t(context, 'select_language') ?? 'Seleccionar idioma'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Español'),
+              leading: Radio<String>(
+                value: 'es',
+                groupValue: _lang,
+                onChanged: (v) {
+                  if (v != null) {
+                    widget.onSetLanguage(v);
+                    setState(() => _lang = v);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              onTap: () {
+                widget.onSetLanguage('es');
+                setState(() => _lang = 'es');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('English'),
+              leading: Radio<String>(
+                value: 'en',
+                groupValue: _lang,
+                onChanged: (v) {
+                  if (v != null) {
+                    widget.onSetLanguage(v);
+                    setState(() => _lang = v);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              onTap: () {
+                widget.onSetLanguage('en');
+                setState(() => _lang = 'en');
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -62,37 +148,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
-          tooltip: 'Volver',
+          tooltip: 'Volver a la pantalla anterior',
         ),
       ),
       body: ListView(
         children: [
           _buildSectionHeader(context, 'Apariencia y Accesibilidad'),
-          Semantics(
-            label: 'Cambiar a tema ${isDark ? 'claro' : 'oscuro'}',
-            hint: 'Activa o desactiva el modo oscuro de la aplicación',
-            child: SwitchListTile(
-              secondary: Icon(Icons.dark_mode_outlined, color: isDark ? AppTheme.igBlue : AppTheme.igGrey),
-              title: Text(Strings.t(context, 'dark_theme')),
-              value: _dark,
-              onChanged: (v) {
-                setState(() => _dark = v);
-                widget.onToggleTheme(v);
-              },
-            ),
+          SwitchListTile(
+            secondary: Icon(Icons.dark_mode_outlined, color: isDark ? AppTheme.igBlue : AppTheme.igGrey),
+            title: Text(Strings.t(context, 'dark_theme')),
+            subtitle: Text(isDark ? 'Activado' : 'Desactivado'),
+            value: _dark,
+            onChanged: (v) {
+              setState(() => _dark = v);
+              widget.onToggleTheme(v);
+            },
           ),
-          _buildLanguageSelector(context),
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: Text(Strings.t(context, 'language')),
+            subtitle: Text(_lang == 'en' ? 'English' : 'Español'),
+            onTap: _showLanguageDialog,
+          ),
           
           _buildSectionHeader(context, 'Notificaciones'),
-          Semantics(
-            label: 'Notificaciones de la aplicación',
-            hint: 'Permite recibir avisos sobre nuevos likes y comentarios',
-            child: SwitchListTile(
-              secondary: const Icon(Icons.notifications_none),
-              title: Text(Strings.t(context, 'notifs')),
-              value: _notifs,
-              onChanged: _saveNotifs,
-            ),
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_none),
+            title: Text(Strings.t(context, 'notifs')),
+            subtitle: Text(_notifs ? 'Activadas' : 'Desactivadas'),
+            value: _notifs,
+            onChanged: _saveNotifs,
           ),
 
           _buildSectionHeader(context, 'Información'),
@@ -117,13 +202,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Strings.t(context, 'logout'), 
               style: const TextStyle(color: AppTheme.igRed, fontWeight: FontWeight.bold)
             ),
-            onTap: _logout,
+            onTap: _showLogoutConfirmation,
           ),
           const SizedBox(height: 40),
-          const Center(
+          Center(
             child: Text(
-              'Versión 1.0.0 (Fase 1 Accessible)',
-              style: TextStyle(color: AppTheme.igGrey, fontSize: 12),
+              'Versión 1.0.0',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.igGrey),
             ),
           ),
           const SizedBox(height: 20),
@@ -137,8 +222,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
-          color: AppTheme.igGrey,
+        style: TextStyle(
+          color: Theme.of(context).primaryColor,
           fontSize: 12,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
@@ -153,34 +238,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text(title),
       trailing: const Icon(Icons.chevron_right, size: 20, color: AppTheme.igGrey),
       onTap: onTap,
-    );
-  }
-
-  Widget _buildLanguageSelector(BuildContext context) {
-    return Semantics(
-      label: 'Seleccionar idioma',
-      hint: 'Cambia el idioma de la interfaz de la aplicación',
-      child: ListTile(
-        leading: const Icon(Icons.language),
-        title: Text(Strings.t(context, 'language')),
-        subtitle: Text(_lang == 'en' ? 'English' : 'Español'),
-        trailing: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: _lang,
-            icon: const Icon(Icons.keyboard_arrow_down, color: AppTheme.igGrey),
-            items: const [
-              DropdownMenuItem(value: 'en', child: Text('English')),
-              DropdownMenuItem(value: 'es', child: Text('Español')),
-            ],
-            onChanged: (v) {
-              if (v != null) {
-                widget.onSetLanguage(v);
-                setState(() => _lang = v);
-              }
-            },
-          ),
-        ),
-      ),
     );
   }
 }
