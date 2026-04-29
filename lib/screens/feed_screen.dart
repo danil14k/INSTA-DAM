@@ -55,9 +55,13 @@ class _FeedScreenState extends State<FeedScreen> {
           IconButton(
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, color: brand),
             onPressed: () => widget.onToggleTheme(!isDark),
-            tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
+            tooltip: Strings.t(context, isDark ? 'light_mode_tooltip' : 'dark_mode_tooltip'),
           ),
-          IconButton(icon: Icon(Icons.favorite_border), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.favorite_border), 
+            onPressed: () {},
+            tooltip: 'Notificaciones',
+          ),
         ],
       ) : null,
       body: _buildBody(),
@@ -74,11 +78,26 @@ class _FeedScreenState extends State<FeedScreen> {
           }
         },
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Mensajes'),
-          BottomNavigationBarItem(icon: Icon(Icons.add_box_outlined), label: 'Crear'),
-          BottomNavigationBarItem(icon: Icon(Icons.movie_outlined), label: 'Reels'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.home), 
+            label: Strings.t(context, 'nav_home')
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.chat_bubble_outline), 
+            label: Strings.t(context, 'nav_messages')
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.add_box_outlined), 
+            label: Strings.t(context, 'nav_create')
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.movie_outlined), 
+            label: Strings.t(context, 'nav_reels')
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person_outline), 
+            label: Strings.t(context, 'nav_profile')
+          ),
         ],
       ),
     );
@@ -91,8 +110,8 @@ class _FeedScreenState extends State<FeedScreen> {
           onRefresh: () async => _onRefresh(),
           child: _posts.isEmpty
               ? ListView(children: [
-                  SizedBox(height: 120),
-                  Center(child: Text(Strings.t(context, 'feed_no_posts'), style: TextStyle(fontSize: 16))),
+                  const SizedBox(height: 120),
+                  Center(child: Text(Strings.t(context, 'feed_no_posts'), style: const TextStyle(fontSize: 16))),
                 ])
               : ListView.builder(
                   itemCount: _posts.length,
