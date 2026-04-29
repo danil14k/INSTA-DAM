@@ -56,16 +56,6 @@ class FirestoreService {
     return snap.docs.map((d) => User.fromMap(d.data() as Map<String, dynamic>, docId: d.id)).toList();
   }
 
-  Future<List<User>> searchUsers(String query) async {
-    // Firestore no soporta LIKE, hacemos búsqueda por prefijo en username
-    final snap = await _users
-        .orderBy('username')
-        .startAt([query])
-        .endAt([query + '\uf8ff'])
-        .get();
-    return snap.docs.map((d) => User.fromMap(d.data() as Map<String, dynamic>, docId: d.id)).toList();
-  }
-
   // ==================== Posts ====================
   Future<Post> createPost(Post p) async {
     final doc = await _posts.add(p.toMap());
@@ -74,12 +64,23 @@ class FirestoreService {
   }
 
   Future<List<Post>> getAllPosts({String? username}) async {
-    Query query = _posts.orderBy('date', descending: true);
-    if (username != null) {
-      query = query.where('username', isEqualTo: username);
+    try {
+      Query query = _posts;
+      
+      if (username != null) {
+        // If filtering by username, we fetch and sort in memory to avoid missing index errors in Firestore
+        final snap = await query.where('username', isEqualTo: username).get();
+        final posts = snap.docs.map((d) => Post.fromMap(d.data() as Map<String, dynamic>, docId: d.id)).toList();
+        posts.sort((a, b) => b.date.compareTo(a.date)); // Sort descending by date
+        return posts;
+      } else {
+        final snap = await query.orderBy('date', descending: true).get();
+        return snap.docs.map((d) => Post.fromMap(d.data() as Map<String, dynamic>, docId: d.id)).toList();
+      }
+    } catch (e) {
+      print("Error loading posts: $e");
+      return [];
     }
-    final snap = await query.get();
-    return snap.docs.map((d) => Post.fromMap(d.data() as Map<String, dynamic>, docId: d.id)).toList();
   }
 
   Future<List<Post>> getMediaPosts() async {
@@ -92,11 +93,6 @@ class FirestoreService {
         .map((d) => Post.fromMap(d.data() as Map<String, dynamic>, docId: d.id))
         .where((p) => p.hasMedia)
         .toList();
-  }
-
-  Future<void> updatePost(Post p) async {
-    if (p.id == null) return;
-    await _posts.doc(p.id).update(p.toMap());
   }
 
   Future<void> deletePost(String postId) async {
@@ -242,7 +238,6 @@ class FirestoreService {
   }
 
   Future<List<Message>> getConversation(String user1, String user2) async {
-    // Firestore no soporta OR directamente, hacemos 2 queries
     final snap1 = await _messages
         .where('senderUsername', isEqualTo: user1)
         .where('receiverUsername', isEqualTo: user2)
@@ -281,7 +276,6 @@ class FirestoreService {
 
       final lastMessage = conversation.last;
 
-      // Contar mensajes no leídos
       final unreadSnap = await _messages
           .where('senderUsername', isEqualTo: partner)
           .where('receiverUsername', isEqualTo: username)

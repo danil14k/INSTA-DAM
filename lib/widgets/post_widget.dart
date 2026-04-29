@@ -134,9 +134,14 @@ class _PostWidgetState extends State<PostWidget> {
     } else {
       await FirestoreService.instance.removeLike(_post.id!, widget.currentUser.username);
     }
-    final updated = await FirestoreService.instance.getAllPosts();
-    final refreshed = updated.firstWhere((p) => p.id == _post.id, orElse: () => _post);
-    if (mounted) setState(() => _post = refreshed);
+    // Refresh post data to get updated like count
+    final updatedPosts = await FirestoreService.instance.getAllPosts();
+    try {
+      final refreshed = updatedPosts.firstWhere((p) => p.id == _post.id);
+      if (mounted) setState(() => _post = refreshed);
+    } catch (e) {
+      // Post might have been deleted or not found
+    }
     widget.onChanged?.call();
   }
 
@@ -160,11 +165,8 @@ class _PostWidgetState extends State<PostWidget> {
       if (_post.isImage) {
         return Hero(
           tag: 'post_${_post.id}',
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(0),
-            child: Image.file(File(_post.mediaPath), fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholder()),
-          ),
+          child: Image.file(File(_post.mediaPath), fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _buildRemoteOrPlaceholder()),
         );
       } else if (_post.isVideo && _videoController != null) {
         return _videoController!.value.isInitialized
@@ -195,35 +197,36 @@ class _PostWidgetState extends State<PostWidget> {
             : _placeholder();
       }
     }
+    return _buildRemoteOrPlaceholder();
+  }
 
+  Widget _buildRemoteOrPlaceholder() {
     if (_post.imageUrl.isNotEmpty) {
       return Hero(
         tag: 'post_${_post.id}',
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(0),
-          child: Image.network(_post.imageUrl, fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _placeholder()),
-        ),
+        child: Image.network(_post.imageUrl, fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _placeholder()),
       );
     }
-
     return _placeholder();
   }
 
   Widget _placeholder() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
+      height: 300,
+      width: double.infinity,
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
       ),
-      child: Icon(Icons.image, size: 50, color: Theme.of(context).textTheme.bodyMedium?.color),
+      child: Icon(Icons.image, size: 50, color: AppTheme.igGrey),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final brand = AppTheme.brandOf(context);
-    final secondaryText = Theme.of(context).textTheme.bodyMedium?.color;
+    final secondaryText = AppTheme.igGrey;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,36 +263,33 @@ class _PostWidgetState extends State<PostWidget> {
                   ),
                 ),
               ),
-              Semantics(
-                label: Strings.t(context, 'post_options'),
-                child: IconButton(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  onPressed: () {
-                    if (_post.username == widget.currentUser.username) {
-                      showModalBottomSheet(
-                        context: context,
-                        builder: (context) => Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              leading: const Icon(Icons.edit),
-                              title: Text(Strings.t(context, 'edit_description')),
-                              onTap: () { Navigator.pop(context); _showEditDialog(); },
-                            ),
-                            ListTile(
-                              leading: const Icon(Icons.delete, color: AppTheme.igRed),
-                              title: Text(Strings.t(context, 'delete_post'), style: const TextStyle(color: AppTheme.igRed)),
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showDeleteConfirmation();
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                  },
-                ),
+              IconButton(
+                icon: const Icon(Icons.more_vert, size: 20),
+                onPressed: () {
+                  if (_post.username == widget.currentUser.username) {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) => Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.edit),
+                            title: Text(Strings.t(context, 'edit_description')),
+                            onTap: () { Navigator.pop(context); _showEditDialog(); },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.delete, color: AppTheme.igRed),
+                            title: Text(Strings.t(context, 'delete_post'), style: const TextStyle(color: AppTheme.igRed)),
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showDeleteConfirmation();
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -309,7 +309,6 @@ class _PostWidgetState extends State<PostWidget> {
                     size: 26,
                   ),
                   onPressed: _toggleLike,
-                  tooltip: 'Me gusta',
                 ),
               ),
               Semantics(
@@ -321,13 +320,11 @@ class _PostWidgetState extends State<PostWidget> {
                     _loadCommentsCount();
                     widget.onChanged?.call();
                   },
-                  tooltip: 'Comentar',
                 ),
               ),
-              const IconButton(
-                icon: Icon(Icons.send_outlined, size: 24),
-                onPressed: null,
-                tooltip: 'Enviar',
+              IconButton(
+                icon: const Icon(Icons.send_outlined, size: 24),
+                onPressed: () {},
               ),
               const Spacer(),
               Semantics(
@@ -335,7 +332,6 @@ class _PostWidgetState extends State<PostWidget> {
                 child: IconButton(
                   icon: Icon(_bookmarked ? Icons.bookmark : Icons.bookmark_border, size: 26),
                   onPressed: _toggleBookmark,
-                  tooltip: 'Guardar',
                 ),
               ),
             ],
@@ -347,7 +343,11 @@ class _PostWidgetState extends State<PostWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${_post.likes} Me gusta', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              // FIXED: Visual translation for likes
+              Text(
+                Strings.t(context, 'likes_visual', args: {'count': _post.likes.toString()}), 
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)
+              ),
               const SizedBox(height: 4),
               RichText(
                 text: TextSpan(
@@ -375,13 +375,17 @@ class _PostWidgetState extends State<PostWidget> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(top: 6.0),
-                    child: Text(Strings.t(context, 'view_comments', args: {'count': _commentsCount.toString()}), 
-                      style: TextStyle(color: secondaryText, fontSize: 14, fontWeight: FontWeight.w400)),
+                    child: Text(
+                      Strings.t(context, 'view_comments', args: {'count': _commentsCount.toString()}), 
+                      style: TextStyle(color: secondaryText, fontSize: 14)
+                    ),
                   ),
                 ),
               const SizedBox(height: 4),
-              Text(_post.date.toUpperCase(), 
-                style: TextStyle(color: secondaryText, fontSize: 10, letterSpacing: 0.2)),
+              Text(
+                _post.date.toUpperCase(), 
+                style: TextStyle(color: secondaryText, fontSize: 10, letterSpacing: 0.2)
+              ),
             ],
           ),
         ),

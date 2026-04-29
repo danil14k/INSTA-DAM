@@ -49,6 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       widget.currentUser.bio = user.bio;
       widget.currentUser.profileImagePath = user.profileImagePath;
     }
+    // Fixed: Filtering posts by username to show them in profile
     final posts = await FirestoreService.instance.getAllPosts(username: widget.currentUser.username);
     final followers = await FirestoreService.instance.getFollowersCount(widget.currentUser.username);
     final following = await FirestoreService.instance.getFollowingCount(widget.currentUser.username);
@@ -136,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () => Navigator.pushNamed(context, '/settings'),
-            tooltip: 'Ajustes',
+            tooltip: Strings.t(context, 'settings'),
           ),
         ],
       ),
@@ -169,11 +170,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildStatColumn(_postCount, 'Publicaciones', onTap: _showFilteredFeed),
-                        _buildStatColumn(_followersCount, 'Seguidores', onTap: () =>
-                          _showUserList('Seguidores', () => FirestoreService.instance.getFollowers(widget.currentUser.username))),
-                        _buildStatColumn(_followingCount, 'Seguidos', onTap: () =>
-                          _showUserList('Seguidos', () => FirestoreService.instance.getFollowing(widget.currentUser.username))),
+                        _buildStatColumn(_postCount, Strings.t(context, 'stat_posts'), onTap: _showFilteredFeed),
+                        _buildStatColumn(_followersCount, Strings.t(context, 'stat_followers'), onTap: () =>
+                          _showUserList(Strings.t(context, 'stat_followers'), () => FirestoreService.instance.getFollowers(widget.currentUser.username))),
+                        _buildStatColumn(_followingCount, Strings.t(context, 'stat_following'), onTap: () =>
+                          _showUserList(Strings.t(context, 'stat_following'), () => FirestoreService.instance.getFollowing(widget.currentUser.username))),
                       ],
                     ),
                   ),
@@ -196,18 +197,21 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: OutlinedButton(
-                onPressed: () async {
-                  await Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => EditProfileScreen(
-                      currentUser: widget.currentUser,
-                      onUpdated: (updated) {
-                        _loadData();
-                      },
-                    ),
-                  ));
-                },
-                child: const Text('Editar perfil'),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () async {
+                    await Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => EditProfileScreen(
+                        currentUser: widget.currentUser,
+                        onUpdated: (updated) {
+                          _loadData();
+                        },
+                      ),
+                    ));
+                  },
+                  child: Text(Strings.t(context, 'edit_profile')),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -218,14 +222,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                   child: IconButton(
                     icon: Icon(Icons.grid_on, color: _isGridView ? (isDark ? Colors.white : Colors.black) : AppTheme.igGrey),
                     onPressed: () => setState(() => _isGridView = true),
-                    tooltip: 'Vista de cuadrícula',
+                    tooltip: Strings.t(context, 'grid_view'),
                   ),
                 ),
                 Expanded(
                   child: IconButton(
                     icon: Icon(Icons.person_pin_outlined, color: !_isGridView ? (isDark ? Colors.white : Colors.black) : AppTheme.igGrey),
                     onPressed: () => setState(() => _isGridView = false),
-                    tooltip: 'Fotos en las que apareces',
+                    tooltip: Strings.t(context, 'tagged_view'),
                   ),
                 ),
               ],
@@ -244,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                   itemBuilder: (context, i) {
                     final post = _userPosts[i];
                     return Semantics(
-                      label: 'Publicación ${i + 1}',
+                      label: '${Strings.t(context, 'stat_posts')} ${i + 1}',
                       onTap: _showFilteredFeed,
                       child: GestureDetector(
                         onTap: _showFilteredFeed,
@@ -264,6 +268,17 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     if (post.hasMedia && post.isImage) {
       return Image.file(
         File(post.mediaPath), 
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _buildRemoteOrPlaceholder(post, isDark),
+      );
+    }
+    return _buildRemoteOrPlaceholder(post, isDark);
+  }
+
+  Widget _buildRemoteOrPlaceholder(Post post, bool isDark) {
+    if (post.imageUrl.isNotEmpty) {
+      return Image.network(
+        post.imageUrl,
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => _gridPlaceholder(isDark),
       );

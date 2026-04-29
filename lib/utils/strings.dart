@@ -43,6 +43,7 @@ class Strings {
     'post_options': 'Post options',
     'like_active': 'Unlike. {count} people liked this',
     'like_inactive': 'Like. {count} people liked this',
+    'likes_visual': '{count} Likes',
     'comment_accessible': 'Comment. {count} comments',
     'save_active': 'Remove from saved',
     'save_inactive': 'Save post',
@@ -66,6 +67,8 @@ class Strings {
     'error_generic': 'An error occurred. Try again.',
     'empty_user_error': 'Username cannot be empty',
     'empty_pass_error': 'Password cannot be empty',
+    'description_label': 'Write a description...',
+    'location_label': 'Add location',
   };
 
   static const _es = {
@@ -110,6 +113,7 @@ class Strings {
     'post_options': 'Opciones de publicación',
     'like_active': 'Quitar me gusta. A {count} personas les gusta esto',
     'like_inactive': 'Me gusta. A {count} personas les gusta esto',
+    'likes_visual': '{count} Me gusta',
     'comment_accessible': 'Comentar. {count} comentarios',
     'save_active': 'Quitar de guardados',
     'save_inactive': 'Guardar publicación',
@@ -133,6 +137,8 @@ class Strings {
     'error_generic': 'Ha ocurrido un error. Inténtalo de nuevo.',
     'empty_user_error': 'El nombre de usuario no puede estar vacío',
     'empty_pass_error': 'La contraseña no puede estar vacía',
+    'description_label': 'Escribe una descripción...',
+    'location_label': 'Añadir ubicación',
   };
 
   static String t(BuildContext context, String key, {Map<String, String>? args}) {
