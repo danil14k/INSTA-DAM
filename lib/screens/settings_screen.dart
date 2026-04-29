@@ -45,7 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(v ? 'Notificaciones activadas' : 'Notificaciones desactivadas'),
+        content: Text(Strings.t(context, v ? 'notif_on' : 'notif_off')),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -57,19 +57,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(Strings.t(context, 'logout_title') ?? 'Cerrar sesión'),
-          content: Text(Strings.t(context, 'logout_confirm') ?? '¿Estás seguro de que quieres cerrar sesión?'),
+          title: Text(Strings.t(context, 'logout_title')),
+          content: Text(Strings.t(context, 'logout_confirm')),
           actions: <Widget>[
             TextButton(
-              child: Text(Strings.t(context, 'cancel') ?? 'Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              child: Text(Strings.t(context, 'cancel')),
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: Text(
-                Strings.t(context, 'logout') ?? 'Cerrar sesión',
-                style: const TextStyle(color: Colors.red),
+                Strings.t(context, 'logout'),
+                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -87,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(Strings.t(context, 'select_language') ?? 'Seleccionar idioma'),
+        title: Text(Strings.t(context, 'select_language')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -148,16 +146,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
-          tooltip: 'Volver a la pantalla anterior',
+          tooltip: Strings.t(context, 'back_tooltip'),
         ),
       ),
       body: ListView(
         children: [
-          _buildSectionHeader(context, 'Apariencia y Accesibilidad'),
+          _buildSectionHeader(context, Strings.t(context, 'appearance')),
           SwitchListTile(
             secondary: Icon(Icons.dark_mode_outlined, color: isDark ? AppTheme.igBlue : AppTheme.igGrey),
             title: Text(Strings.t(context, 'dark_theme')),
-            subtitle: Text(isDark ? 'Activado' : 'Desactivado'),
+            subtitle: Text(isDark ? Strings.t(context, 'activated') : Strings.t(context, 'disabled')),
             value: _dark,
             onChanged: (v) {
               setState(() => _dark = v);
@@ -171,26 +169,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: _showLanguageDialog,
           ),
           
-          _buildSectionHeader(context, 'Notificaciones'),
+          _buildSectionHeader(context, Strings.t(context, 'notifications_section')),
           SwitchListTile(
             secondary: const Icon(Icons.notifications_none),
             title: Text(Strings.t(context, 'notifs')),
-            subtitle: Text(_notifs ? 'Activadas' : 'Desactivadas'),
+            subtitle: Text(_notifs ? Strings.t(context, 'activated') : Strings.t(context, 'disabled')),
             value: _notifs,
             onChanged: _saveNotifs,
           ),
 
-          _buildSectionHeader(context, 'Información'),
+          _buildSectionHeader(context, Strings.t(context, 'info_section')),
           _buildSettingsItem(
             context, 
             icon: Icons.info_outline, 
-            title: 'Acerca de InstaDAM', 
+            title: Strings.t(context, 'about'), 
             onTap: () {}
           ),
           _buildSettingsItem(
             context, 
             icon: Icons.help_outline, 
-            title: 'Ayuda y soporte técnico', 
+            title: Strings.t(context, 'help'), 
             onTap: () {}
           ),
           

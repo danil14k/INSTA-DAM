@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'firebase_options.dart';
 
 import 'screens/login_screen.dart';
@@ -12,8 +13,6 @@ import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 import 'db/firestore_service.dart';
 import 'models/user.dart';
-
-// PRUEBA_GITHUB: Esta línea es para verificar GitHub Desktop.
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +39,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.light;
-  Locale _locale = Locale('es');
+  Locale _locale = const Locale('es');
   User? _currentUser;
   bool _splashFinished = false;
 
@@ -109,10 +108,20 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'InstaDAM',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
       locale: _locale,
+      supportedLocales: const [
+        Locale('es'),
+        Locale('en'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: _splashFinished
           ? (_currentUser == null
           ? LoginScreen(onLogin: _onLogin, onToggleTheme: _toggleTheme, isDark: _themeMode == ThemeMode.dark)
