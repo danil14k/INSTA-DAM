@@ -80,10 +80,10 @@ class _PostWidgetState extends State<PostWidget> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Editar descripción'),
-        content: TextField(controller: editCtrl),
+        title: const Text('Editar descripción'),
+        content: TextField(controller: editCtrl, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           TextButton(
             onPressed: () async {
               _post.description = editCtrl.text;
@@ -92,7 +92,7 @@ class _PostWidgetState extends State<PostWidget> {
               setState(() {});
               widget.onChanged?.call();
             },
-            child: Text('Guardar'),
+            child: const Text('Guardar'),
           ),
         ],
       ),
@@ -130,38 +130,38 @@ class _PostWidgetState extends State<PostWidget> {
   Widget _buildMediaContent() {
     if (_post.hasMedia) {
       if (_post.isImage) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.file(File(_post.mediaPath), fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _placeholder()),
+        return Hero(
+          tag: 'post_${_post.id}',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(0),
+            child: Image.file(File(_post.mediaPath), fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholder()),
+          ),
         );
       } else if (_post.isVideo && _videoController != null) {
         return _videoController!.value.isInitialized
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _videoController!.value.isPlaying
-                          ? _videoController!.pause()
-                          : _videoController!.play();
-                    });
-                  },
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      AspectRatio(
-                        aspectRatio: _videoController!.value.aspectRatio,
-                        child: VideoPlayer(_videoController!),
+            ? GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _videoController!.value.isPlaying
+                        ? _videoController!.pause()
+                        : _videoController!.play();
+                  });
+                },
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AspectRatio(
+                      aspectRatio: _videoController!.value.aspectRatio,
+                      child: VideoPlayer(_videoController!),
+                    ),
+                    if (!_videoController!.value.isPlaying)
+                      Container(
+                        decoration: const BoxDecoration(color: Colors.black38, shape: BoxShape.circle),
+                        padding: const EdgeInsets.all(12),
+                        child: const Icon(Icons.play_arrow, color: Colors.white, size: 40),
                       ),
-                      if (!_videoController!.value.isPlaying)
-                        Container(
-                          decoration: BoxDecoration(color: Colors.black38, shape: BoxShape.circle),
-                          padding: EdgeInsets.all(12),
-                          child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
               )
             : _placeholder();
@@ -169,10 +169,13 @@ class _PostWidgetState extends State<PostWidget> {
     }
 
     if (_post.imageUrl.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.network(_post.imageUrl, fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _placeholder()),
+      return Hero(
+        tag: 'post_${_post.id}',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(0),
+          child: Image.network(_post.imageUrl, fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _placeholder()),
+        ),
       );
     }
 
@@ -184,7 +187,6 @@ class _PostWidgetState extends State<PostWidget> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
-        borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(Icons.image, size: 50, color: Theme.of(context).textTheme.bodyMedium?.color),
     );
@@ -198,129 +200,145 @@ class _PostWidgetState extends State<PostWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header with avatar, username, location
+        // Header
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
           child: Row(
             children: [
               GestureDetector(
                 onTap: () => _navigateToProfile(_post.username),
                 child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: brand.withValues(alpha: 0.2),
+                  radius: 16,
+                  backgroundColor: brand.withAlpha(50),
                   backgroundImage: _postUser != null && _postUser!.profileImagePath.isNotEmpty
                       ? FileImage(File(_postUser!.profileImagePath))
                       : null,
                   child: _postUser == null || _postUser!.profileImagePath.isEmpty
-                      ? Icon(Icons.person, size: 20, color: brand)
+                      ? Icon(Icons.person, size: 18, color: brand)
                       : null,
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: GestureDetector(
                   onTap: () => _navigateToProfile(_post.username),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(_post.username, style: TextStyle(fontWeight: FontWeight.bold)),
-                          if (_post.isVideo) ...[
-                            SizedBox(width: 6),
-                            Icon(Icons.videocam, size: 16, color: secondaryText),
-                          ],
-                        ],
-                      ),
+                      Text(_post.username, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       if (_post.location.isNotEmpty)
-                        Text(_post.location, style: TextStyle(color: secondaryText, fontSize: 12)),
+                        Text(_post.location, style: TextStyle(color: secondaryText, fontSize: 11)),
                     ],
                   ),
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.more_vert),
-                onPressed: () {
-                  if (_post.username == widget.currentUser.username) {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) => Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ListTile(
-                            leading: Icon(Icons.edit),
-                            title: Text('Editar descripción'),
-                            onTap: () { Navigator.pop(context); _showEditDialog(); },
-                          ),
-                          ListTile(
-                            leading: Icon(Icons.delete, color: AppTheme.error),
-                            title: Text('Borrar publicación', style: TextStyle(color: AppTheme.error)),
-                            onTap: () async {
-                              await FirestoreService.instance.deletePost(_post.id!);
-                              Navigator.pop(context);
-                              widget.onChanged?.call();
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
+              Semantics(
+                label: 'Opciones de publicación',
+                child: IconButton(
+                  icon: const Icon(Icons.more_vert, size: 20),
+                  onPressed: () {
+                    if (_post.username == widget.currentUser.username) {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) => Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.edit),
+                              title: const Text('Editar descripción'),
+                              onTap: () { Navigator.pop(context); _showEditDialog(); },
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.delete, color: AppTheme.igRed),
+                              title: const Text('Borrar publicación', style: TextStyle(color: AppTheme.igRed)),
+                              onTap: () async {
+                                await FirestoreService.instance.deletePost(_post.id!);
+                                Navigator.pop(context);
+                                widget.onChanged?.call();
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                ),
               ),
             ],
           ),
         ),
         // Media
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: AspectRatio(aspectRatio: 1.0, child: _buildMediaContent()),
-        ),
+        _buildMediaContent(),
         // Action buttons
-        Row(
-          children: [
-            IconButton(
-              icon: Icon(_liked ? Icons.favorite : Icons.favorite_border, color: _liked ? brand : null),
-              onPressed: _toggleLike,
-            ),
-            IconButton(
-              icon: Icon(Icons.chat_bubble_outline),
-              onPressed: () async {
-                await Navigator.push(context, MaterialPageRoute(builder: (_) => CommentsScreen(post: _post, currentUser: widget.currentUser)));
-                _loadCommentsCount();
-                widget.onChanged?.call();
-              },
-            ),
-            Spacer(),
-            IconButton(
-              icon: Icon(_bookmarked ? Icons.bookmark : Icons.bookmark_border, color: _bookmarked ? brand : null),
-              onPressed: _toggleBookmark,
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            children: [
+              Semantics(
+                label: _liked ? 'Quitar me gusta. A ${_post.likes} personas les gusta esto' : 'Me gusta. A ${_post.likes} personas les gusta esto',
+                child: IconButton(
+                  icon: Icon(_liked ? Icons.favorite : Icons.favorite_border, 
+                    color: _liked ? AppTheme.igRed : null,
+                    size: 26,
+                  ),
+                  onPressed: _toggleLike,
+                  tooltip: 'Me gusta',
+                ),
+              ),
+              Semantics(
+                label: 'Comentar. $_commentsCount comentarios',
+                child: IconButton(
+                  icon: const Icon(Icons.chat_bubble_outline, size: 24),
+                  onPressed: () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (_) => CommentsScreen(post: _post, currentUser: widget.currentUser)));
+                    _loadCommentsCount();
+                    widget.onChanged?.call();
+                  },
+                  tooltip: 'Comentar',
+                ),
+              ),
+              const IconButton(
+                icon: Icon(Icons.send_outlined, size: 24),
+                onPressed: null, // Compartir no implementado
+                tooltip: 'Enviar',
+              ),
+              const Spacer(),
+              Semantics(
+                label: _bookmarked ? 'Quitar de guardados' : 'Guardar publicación',
+                child: IconButton(
+                  icon: Icon(_bookmarked ? Icons.bookmark : Icons.bookmark_border, size: 26),
+                  onPressed: _toggleBookmark,
+                  tooltip: 'Guardar',
+                ),
+              ),
+            ],
+          ),
         ),
         // Post info
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 14.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${_post.likes} Me gusta', style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              // Username + description with @mentions
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () => _navigateToProfile(_post.username),
-                    child: Text(_post.username, style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                  SizedBox(width: 6),
-                  Expanded(
-                    child: MentionText(
-                      text: _post.description,
-                      onMentionTap: (username) => _navigateToProfile(username),
+              Text('${_post.likes} Me gusta', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: 4),
+              // Username + description
+              RichText(
+                text: TextSpan(
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  children: [
+                    TextSpan(
+                      text: '${_post.username} ',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    WidgetSpan(
+                      child: MentionText(
+                        text: _post.description,
+                        onMentionTap: (username) => _navigateToProfile(username),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               if (_commentsCount > 0)
                 GestureDetector(
@@ -330,18 +348,18 @@ class _PostWidgetState extends State<PostWidget> {
                     widget.onChanged?.call();
                   },
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text('Ver comentarios ($_commentsCount)', style: TextStyle(color: secondaryText, fontSize: 14)),
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Text('Ver los $_commentsCount comentarios', 
+                      style: TextStyle(color: secondaryText, fontSize: 14, fontWeight: FontWeight.w400)),
                   ),
                 ),
-              SizedBox(height: 4),
-              Text(_post.date, style: TextStyle(color: secondaryText, fontSize: 12)),
+              const SizedBox(height: 4),
+              Text(_post.date.toUpperCase(), 
+                style: TextStyle(color: secondaryText, fontSize: 10, letterSpacing: 0.2)),
             ],
           ),
         ),
-        SizedBox(height: 8),
-        Divider(height: 1),
-        SizedBox(height: 4),
+        const SizedBox(height: 12),
       ],
     );
   }
