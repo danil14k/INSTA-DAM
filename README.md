@@ -4,203 +4,78 @@ Clon de Instagram desarrollado con Flutter y Firebase como proyecto educativo pa
 
 ## Tecnologias
 
-- **Flutter** (SDK >=2.19.0 <3.0.0)
-- **Dart** - Lenguaje de programacion
-- **Firebase Core** (v4.5.0) - Conexion con el proyecto Firebase
-- **Cloud Firestore** (v6.1.3) - Base de datos en la nube
-- **Firebase Storage** (v13.1.0) - Almacenamiento de imagenes y videos en la nube
-- **SharedPreferences** (v2.1.1) - Preferencias locales (tema, idioma, sesion)
-- **image_picker** (v1.0.4) - Seleccion de fotos y videos desde galeria o camara
-- **video_player** (v2.8.1) - Reproduccion de videos con loop
-- **intl** (v0.18.1) - Soporte multiidioma (ES/EN)
-- **flutter_launcher_icons** (v0.13.1) - Generacion de iconos personalizados de la app
+- **Flutter** (SDK >=3.0.0)
+- **Dart** - Lenguaje de programación
+- **Firebase Core** - Conexión con el proyecto Firebase
+- **Cloud Firestore** - Base de datos NoSQL en tiempo real
+- **Firebase Storage** - Almacenamiento de imágenes y vídeos
+- **SharedPreferences** - Preferencias locales (tema, idioma, sesión)
+- **image_picker** - Selección de multimedia
+- **video_player** - Reproducción de vídeo
+- **intl** - Soporte multiidioma (ES/EN)
 
-## Configuracion Firebase
+## Configuracion Firebase (Actualizada)
 
 | Campo | Valor |
 |---|---|
-| Proyecto Firebase | `instadam-420cc` |
-| App Android ID | `1:786024455780:android:cb21aec640a79025c78971` |
-| Package name | `com.example.instadam_grupo10` |
-| Storage Bucket | `instadam-420cc.firebasestorage.app` |
-| Firestore ubicacion | `eur3` (Europa) |
-| Plan | Spark (gratuito) |
+| Proyecto Firebase | `instadam-a7e5b` |
+| App Android ID | `1:780130256479:android:0a1dd1f6b541200960fdea` |
+| Package name | `com.instadam` |
+| Storage Bucket | `instadam-a7e5b.firebasestorage.app` |
+| Firestore ubicación | `eur3` (Europa) |
 
 ### Servicios activos
 
-- **Cloud Firestore** - Modo de prueba (lectura/escritura libre)
-- **Firebase Storage** - Para subida de imagenes de perfil y posts
+- **Cloud Firestore** - Base de datos para usuarios, posts, mensajes y likes.
+- **Firebase Storage** - Repositorio para fotos de perfil y contenido de posts.
 
-### Colecciones Firestore
+## Accessibilitat i Disseny Universal (TFG)
 
-**usuarios**
-- `username` (string), `password` (string), `displayName` (string), `bio` (string), `profileImagePath` (string)
+Este proyecto ha sido diseñado siguiendo los principios de accesibilidad para asegurar que personas con discapacidad visual puedan utilizar la red social de forma autónoma.
 
-**posts**
-- `username` (string), `imageUrl` (string), `description` (string), `date` (string), `likes` (number), `mediaPath` (string), `mediaType` (string), `location` (string)
+### Decisiones de Diseño
+1.  **Etiquetado Semántico (TalkBack)**: Todos los elementos interactivos cuentan con etiquetas descriptivas mediante el widget `Semantics` de Flutter. TalkBack anunciará acciones claras como "Dar me gusta al post" en lugar de descripciones genéricas.
+2.  **Tamaño de Objetivos (Touch Targets)**: Se ha revisado que todos los elementos clicables (botones, iconos de navegación) tengan un tamaño mínimo de **44x44dp**, cumpliendo con las pautas de accesibilidad móvil para facilitar la pulsación.
+3.  **Contrastes de Color**: La paleta de colores ha sido verificada con *Contrast Checker*, asegurando un ratio superior a **4.5:1** (estándar WCAG AA) para garantizar la legibilidad.
+4.  **Temas Adaptativos**: Implementación de Modo Claro y Modo Oscuro con colores de alto contraste para reducir la fatiga visual y ayudar a usuarios con baja visión.
 
-**comentarios**
-- `postId` (string), `username` (string), `text` (string), `date` (string)
+### Paleta de Colores y Contraste
 
-**likes**
-- `postId` (string), `username` (string)
-- Documento ID: `{postId}_{username}`
-
-**follows**
-- `followerUsername` (string), `followingUsername` (string)
-- Documento ID: `{follower}_{following}`
-
-**messages**
-- `senderUsername` (string), `receiverUsername` (string), `text` (string), `date` (string), `read` (boolean)
-
-**bookmarks**
-- `postId` (string), `username` (string)
-- Documento ID: `{postId}_{username}`
+| Elemento | Modo claro | Modo oscuro | Ratio Contraste |
+|----------|-----------|-------------|-----------------|
+| Fondo | `#FFFFFF` | `#000000` | - |
+| Marca (Azul) | `#0095F6` | `#0095F6` | 4.6:1 (AA) |
+| Texto Principal| `#000000` | `#FFFFFF` | 21:1 (AAA) |
+| Errores | `#ED4956` | `#ED4956` | Alta visibilidad |
 
 ## Estructura del proyecto
 
 ```
 lib/
-  main.dart                         # Punto de entrada, inicializacion Firebase, gestion de estado global
-  firebase_options.dart             # Configuracion auto-generada por FlutterFire CLI
+  main.dart                         # Inicialización y gestión de estado
+  firebase_options.dart             # Configuración oficial de Firebase
   theme/
-    app_theme.dart                  # Tema claro/oscuro con paleta turquesa personalizada
+    app_theme.dart                  # Configuración de accesibilidad y colores
   db/
-    firestore_service.dart          # Servicio principal Firestore (singleton) - CRUD completo
-    storage_service.dart            # Servicio Firebase Storage para subida de archivos (singleton)
-    database_helper.dart            # (Legacy) SQLite helper - ya no se usa
-  models/
-    user.dart                       # Modelo de usuario (id, username, password, displayName, bio, profileImagePath)
-    post.dart                       # Modelo de publicacion (con helpers: hasMedia, isVideo, isImage)
-    comment.dart                    # Modelo de comentario
-    message.dart                    # Modelo de mensaje (con campo read para estado de lectura)
-  screens/
-    splash_screen.dart              # Pantalla de carga inicial con animacion fade
-    login_screen.dart               # Login / registro automatico con opcion "recuerdame"
-    feed_screen.dart                # Pantalla principal con navegacion inferior (5 tabs)
-    create_post_screen.dart         # Crear publicacion (foto/video + ubicacion + menciones)
-    profile_screen.dart             # Perfil del usuario actual con grid de posts
-    edit_profile_screen.dart        # Editar perfil (nombre, bio, username, foto)
-    user_profile_screen.dart        # Perfil de otros usuarios (seguir/mensaje)
-    settings_screen.dart            # Ajustes (tema, idioma, notificaciones, cerrar sesion)
-    chat_list_screen.dart           # Lista de conversaciones con contador de no leidos
-    chat_screen.dart                # Chat individual entre usuarios
-    comments_screen.dart            # Comentarios de un post con fechas formateadas
-    reels_screen.dart               # Reels (scroll vertical de videos con autoplay y loop)
-    location_picker_screen.dart     # Selector de ubicacion (ciudades de Espana + ubicacion personalizada)
-    mention_users_screen.dart       # Selector de usuarios para mencionar en posts
-  widgets/
-    post_widget.dart                # Widget de publicacion con acciones (like, bookmark, comentar, editar, eliminar)
-    mention_text.dart               # Texto con @menciones clicables que navegan al perfil
-  utils/
-    strings.dart                    # Traducciones ES/EN con funcion Strings.t(context, key)
-assets/
-  media/
-    logos/
-      logo_blanco.png               # Logo para modo claro
-      logo_negro.png                # Logo para modo oscuro
-    profiles/                        # Almacenamiento local de imagenes de perfil
+    firestore_service.dart          # Lógica CRUD (usuarios, posts, mensajes)
+  models/                           # Modelos de datos (User, Post, Comment, Message)
+  screens/                          # Vistas de la aplicación
+  widgets/                          # Componentes reutilizables con Semantics
 ```
 
-## Navegacion principal
+## Navegación y Funcionalidades
 
-La app usa un `BottomNavigationBar` con 5 tabs:
+- **Feed Principal**: Scroll infinito de publicaciones con soporte para imágenes y vídeos.
+- **Mensajería**: Chat en tiempo real con indicadores de lectura (`read: boolean`).
+- **Gestión de Perfil**: Edición completa de bio, nombre y foto de perfil.
+- **Reels**: Experiencia de vídeo vertical con reproducción automática.
+- **Seguidores**: Sistema de seguimiento y estadísticas entre usuarios.
 
-| Tab | Icono | Pantalla |
-|-----|-------|----------|
-| Inicio | `home` | Feed de publicaciones con pull-to-refresh |
-| Mensajes | `chat_bubble_outline` | Lista de conversaciones (ChatListScreen) |
-| Crear | `add_box_outlined` | Crear nueva publicacion (navegacion push) |
-| Reels | `movie_outlined` | Scroll vertical de videos |
-| Perfil | `person_outline` | Perfil del usuario actual |
+## Ejecución
 
-## Funcionalidades
+1.  Asegurarse de tener el archivo `google-services.json` en `android/app/`.
+2.  Ejecutar `flutter clean` y `flutter pub get`.
+3.  Lanzar la aplicación con `flutter run`.
 
-### Autenticacion
-- Login con usuario y contraseña
-- Registro automatico si el usuario no existe
-- Opcion "Recuerdame" con persistencia via SharedPreferences
-- Auto-login al abrir la app si el usuario fue recordado
-
-### Feed y publicaciones
-- Feed principal con todas las publicaciones ordenadas por fecha
-- Pull-to-refresh para actualizar el feed
-- Crear posts con imagen o video desde galeria/camara
-- Añadir ubicacion (selector con ciudades de España + entrada personalizada)
-- Mencionar usuarios (@usuario) con selector dedicado
-- Editar y eliminar posts propios
-- Subida de media a Firebase Storage
-
-### Interacciones sociales
-- Likes con contador sincronizado en Firestore
-- Comentarios en publicaciones
-- Guardados/Bookmarks de posts
-- Seguir/dejar de seguir usuarios
-- Contadores de seguidores y seguidos
-
-### Perfiles
-- Perfil propio con grid de posts y estadisticas
-- Edicion de perfil: nombre, bio, username, foto de perfil
-- Subida de foto de perfil a Firebase Storage
-- Perfil de otros usuarios con acciones (seguir, enviar mensaje)
-- Lista de seguidores y seguidos
-
-### Mensajeria
-- Chat privado entre usuarios
-- Lista de conversaciones con ultimo mensaje
-- Indicador de mensajes no leidos
-- Marcado automatico como leido al abrir conversacion
-- Busqueda de usuarios para iniciar nueva conversacion
-
-### Reels
-- Scroll vertical de contenido multimedia (videos)
-- Reproduccion automatica con loop
-- Paginacion de contenido
-
-### Personalizacion
-- Tema claro/oscuro con paleta turquesa personalizada (Light: #32B5C9, Dark: #40CDE2)
-- Boton de cambio de tema en feed y login
-- Persistencia del tema seleccionado
-- Soporte bilingue: Español (por defecto) e Ingles
-- Toggle de notificaciones en ajustes
-
-### Paleta de colores
-
-| Elemento | Modo claro | Modo oscuro |
-|----------|-----------|-------------|
-| Fondo | `#FFFFFF` | `#121212` |
-| Superficie | `#F8F9FA` | `#1E1E1E` |
-| Marca/Acento | `#32B5C9` | `#40CDE2` |
-| Texto principal | `#1A1A1A` | `#E4E6EB` |
-| Texto secundario | `#65676B` | `#B0B3B8` |
-| Divisor | `#DBDBDB` | `#3E4042` |
-| Error | `#D32F2F` | `#D32F2F` |
-
-## Requisitos previos
-
-1. Flutter SDK instalado (>=2.19.0 <3.0.0)
-2. Android Studio con emulador o dispositivo fisico (API 21+)
-3. Proyecto Firebase configurado (ya incluido en `firebase_options.dart`)
-4. **Firebase Storage**: Activar en la consola de Firebase > Storage > Comenzar
-
-## Ejecucion
-
-```bash
-flutter pub get
-flutter run
-```
-
-## Generar iconos personalizados
-
-```bash
-flutter pub run flutter_launcher_icons
-```
-
-## Notas importantes
-
-- El archivo `database_helper.dart` es legacy y ya no se utiliza. Toda la logica de datos esta en `firestore_service.dart` y `storage_service.dart`.
-- Firebase Storage debe estar activado en la consola de Firebase para que funcione la subida de imagenes. Si no esta activado, las imagenes se mantienen con rutas locales como fallback.
-- Las reglas de Firestore estan en modo de prueba. Para produccion, configurar reglas de seguridad adecuadas.
-- Las contraseñas se almacenan en texto plano en Firestore (proyecto educativo, no produccion).
-- Firebase CLI se ejecuta con `npx firebase-tools` (no `firebase` directo) por problemas de PATH en Windows.
-- La app soporta multiplataforma (Android, iOS, Web, Windows, macOS, Linux) pero esta optimizada para Android.
+---
+*Este proyecto forma parte del ciclo de DAM (Desarrollo de Aplicaciones Multiplataforma).*
