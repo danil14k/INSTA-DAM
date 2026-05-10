@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") version "4.4.4" apply false
     // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.instadam_grupo10"
+    namespace = "com.instadam"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.instadam_grupo10"
+        applicationId = "com.instadam"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
